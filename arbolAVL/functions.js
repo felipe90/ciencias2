@@ -1,6 +1,7 @@
 $(function () {
-	alert("TE amuu :3");
-
+	$("#botonAgregar").on("click",function(){
+		alert("me gustan tus tetas");
+	});
 
 
 });
