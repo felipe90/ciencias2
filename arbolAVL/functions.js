@@ -1,6 +1,19 @@
+var textoNodo;
+
+var nodo={
+	id:0,
+	content:0,
+	izq:0,
+	der:0,
+	facVal:0;
+} 
+
+
 $(function () {
+
 	$("#botonAgregar").on("click",function(){
-		alert("me gustan tus tetas");
+		textoNodo=$("#numeroTexto").val();
+		
 	});
 
 
