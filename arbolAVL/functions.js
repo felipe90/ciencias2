@@ -15,7 +15,6 @@ var arregloNodos=[];
 function initArray () {
 
 	//numero de nodos iniciales nNodos
-	
 	for(var i=0;i<nNodos;i++){
 		arregloNodos[i]=new node(i,0,0,0,0);
 	}

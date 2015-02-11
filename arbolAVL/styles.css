@@ -16,6 +16,7 @@
 	margin: .5rem;
 }
 
+<<<<<<< HEAD
 table td
 {
 	border: 2px solid black;
@@ -25,4 +26,9 @@ table td
 td
 {
 	text-align: center;
+=======
+table
+{
+	border: 2px solid black;
+>>>>>>> origin/master
 }
