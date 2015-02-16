@@ -16,7 +16,11 @@
 	margin: .5rem;
 }
 
-<<<<<<< HEAD
+.message
+{
+	padding-left: 1rem;
+}
+
 table td
 {
 	border: 2px solid black;
@@ -26,9 +30,4 @@ table td
 td
 {
 	text-align: center;
-=======
-table
-{
-	border: 2px solid black;
->>>>>>> origin/master
 }
