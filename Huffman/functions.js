@@ -1,17 +1,21 @@
+
+//huffman variables
 var huffmanArray=new Array();
 var menssage;
 var huffmanObj;
 
+//huffman rows
+var SIMBOL=0;
+var FRECUENCY=1;
+var FATHER=2;
+var TYPE=3;
+var LEFT=4;
+var RIGHT=5;
+
 function huffman (menssage) {
 	var huffmanArrayLength;
 
-	//huffman rows
-	var SIMBOL=0;
-	var FRECUENCY=1;
-	var FATHER=2;
-	var TYPE=3;
-	var LEFT=4;
-	var RIGHT=5;
+
 
 	constructor=huffmanConst(menssage);
 
@@ -26,7 +30,7 @@ function huffmanConst (menssage) {
 		}
 
 		for (var i = 0; i < menssage.length; i++) {
-			temp[menssage.charAt(i) - 97]++;
+			temp[(menssage.charCodeAt(i) -97)]++;
 		}
 
 		var huffmanArrayLength=0;
@@ -54,6 +58,9 @@ function huffmanConst (menssage) {
 				j++;
 			}
 		}
+
+		console.log(huffmanArray);
+		
 }
 
 function decode (argument) {
@@ -82,7 +89,6 @@ function int (argument) {
 $(function () {
 	//funcion para agregar nodos
 	$("#botonResultado").on("click",function(){
-		console.log("huffman");
 		textNodo=$("#numeroTexto").val();
 		huffmanObj=new huffman(textNodo);
 	});
