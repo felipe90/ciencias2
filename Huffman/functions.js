@@ -1,86 +1,132 @@
 
-//huffman variables
-var huffmanArray=new Array();
-var menssage;
+//huffmanObj
 var huffmanObj;
 
-//huffman rows
-var SIMBOL=0;
-var FRECUENCY=1;
-var FATHER=2;
-var TYPE=3;
-var LEFT=4;
-var RIGHT=5;
+function huffman (str) {
+ 	this.str = str;
+ 
+    var count_chars = {};
+    for (var i = 0; i < str.length; i++) 
+        if (str[i] in count_chars) 
+            count_chars[str[i]] ++;
+        else 
+            count_chars[str[i]] = 1;
+ 
+    var pq = new BinaryHeap(function(x){return x[0];});
+    for (var ch in count_chars) 
+        pq.push([count_chars[ch], ch]);
+ 
+    while (pq.size() > 1) {
+        var pair1 = pq.pop();
+        var pair2 = pq.pop();
+        pq.push([pair1[0]+pair2[0], [pair1[1], pair2[1]]]);
+    }
 
-function huffman (menssage) {
-	var huffmanArrayLength;
+    var tree = pq.pop();
+    this.encoding = {};
+    this._generate_encoding(tree[1], "");
+ 
+    this.encoded_string = ""
+    for (var i = 0; i < this.str.length; i++) {
+        this.encoded_string += this.encoding[str[i]];
+    }
 
-
-
-	constructor=huffmanConst(menssage);
+    //to draw the huffman tree
+    this.tree=tree;
 
 }
 
-function huffmanConst (menssage) {
-		var i,j;
 
-		var temp=[];
-		for (var i = 0; i < 26; i++) {
-			temp[i]=0;
-		}
-
-		for (var i = 0; i < menssage.length; i++) {
-			temp[(menssage.charCodeAt(i) -97)]++;
-		}
-
-		var huffmanArrayLength=0;
-
-		for (var i = 0; i < 26; i++) {
-			if (temp[i]!=0) {
-				huffmanArrayLength++;
-			}
-		}
-
-		var numberCol= huffmanArrayLength*2-1;
-
-		for (var i = 0; i < 6; i++) {
-			for (var i = 0; i < numberCol; i++) {
-				huffmanArray[i]=new Array();
-				huffmanArray[i][j] = 0;
-			}
-		}
-
-		var j=0;
-		for (var i = 0; i < 26; i++) {
-			if (temp[i] != 0) {
-				huffmanArray[SIMBOL][j]=i; //letter
-				huffmanArray[FRECUENCY][j]=temp[i]; //frecuenci
-				j++;
-			}
-		}
-
-		console.log(huffmanArray);
-		
+huffman.prototype._generate_encoding = function(ary, prefix) {
+    if (ary instanceof Array) {
+        this._generate_encoding(ary[0], prefix + "0");
+        this._generate_encoding(ary[1], prefix + "1");
+    }
+    else {
+        this.encoding[ary] = prefix;
+    }
+}
+ 
+huffman.prototype.inspect_encoding = function() {
+    var encodeResult=[];
+    var i=0;
+    for (var ch in this.encoding) {
+        encodeResult[i]=ch+":"+ this.encoding[ch]+"  ";
+        i++;
+    }
+    return encodeResult;
+}
+ 
+huffman.prototype.decode = function(encoded) {
+    var rev_enc = {};
+    for (var ch in this.encoding) 
+        rev_enc[this.encoding[ch]] = ch;
+ 
+    var decoded = "";
+    var pos = 0;
+    while (pos < encoded.length) {
+        var key = ""
+        while (!(key in rev_enc)) {
+            key += encoded[pos];
+            pos++;
+        }
+        decoded += rev_enc[key];
+    }
+    return decoded;
 }
 
-function decode (argument) {
-	// body...
+
+function drawArray (tree) {
+	var h=$("#canvas").css("height");
+	var w=$("#canvas").css("width");
+
+	var drawLine = function (x,y,z,w) {
+		$("#canvas").drawLine({
+		  strokeStyle: '#000',
+		  strokeWidth: 1,
+		  x1: x, y1: y,
+		  x2: z, y2: w,
+		});
+	}
+
+	var writeText= function (x1,y1,txt) {
+		$("#canvas").drawText({
+		  fillStyle: '#000',
+		  strokeWidth: 1,
+		  x: x1, y: y1,
+		  fontSize: 10,
+		  fontFamily: 'Verdana, sans-serif',
+		  text: 'adasd'
+		});
+	}
+
+
+    /*
+	var stringTree=tree[1].toString();
+
+	console.log(stringTree);
+	*/
+
 }
 
-function code (argument) {
-	// body...
-}
 
-function numberSimbols (argument) {
-	// body...
-}
 
-function listArray (menor) {
-	// body...
-}
+function generateStadistics (e,t) {
+    var tBinary="";
+	var numberEn=e.length;
+    var numberTr=t.length*8;
+    var percetCode=(numberEn*100)/numberTr;
+    var percetTotal=100-percetCode;
+    
+    for (i=0; i < t.length; i++) {
+        tBinary +=t[i].charCodeAt(0).toString(2) + " ";
+    }
 
-function int (argument) {
-	// body...
+    $("#message").append("<p>Sin Comprimir : "+numberTr+" bits "+tBinary+"</p>");
+    $("#message").append("<p>Comprimido : "+numberEn+" bits "+e+"  </p>");
+    $("#message").append("<p>Codificado : "+percetTotal+" % </p>");
+    $("#message").append("<p>Ahorro : "+percetCode+" % </p>");
+
 }
 
 
@@ -91,6 +137,19 @@ $(function () {
 	$("#botonResultado").on("click",function(){
 		textNodo=$("#numeroTexto").val();
 		huffmanObj=new huffman(textNodo);
+
+		var result=huffmanObj.inspect_encoding()
+		$("#resultado").html(result);
+
+		var e = huffmanObj.encoded_string;
+		console.log(e);
+
+		var t = huffmanObj.decode(e);
+		console.log(t);
+
+		drawArray(huffmanObj.tree);
+        generateStadistics (e,t);
+
 	});
 
 });

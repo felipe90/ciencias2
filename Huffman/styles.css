@@ -10,24 +10,16 @@
 
 .resultado
 {
-	background: lightgrey;
 	content: "";
-	display: inline-block;
 	margin: .5rem;
 }
 
-.message
+canvas
 {
+	width: 500px;
+	height: 300px;
 	padding-left: 1rem;
-}
-
-table td
-{
-	border: 2px solid black;
-
-}
-
-td
-{
-	text-align: center;
+	border:1px solid #000000;
+	margin: 0.5em;
+	display: none;
 }
