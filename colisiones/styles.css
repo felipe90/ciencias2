@@ -96,6 +96,11 @@
 	text-align: center;
 }
 
+.contenido
+{
+	margin: 0.5em;
+	text-align: center;
+}
 
 input
 {
@@ -121,4 +126,34 @@ button
 button:hover
 {
 	background: #00CCFF
+}
+
+table
+{
+	border-collapse: collapse;
+    border-spacing: 0; 
+	text-align: center;
+	border-radius: 1em;
+	margin-left:auto; 
+    margin-right:auto;
+}
+
+table,td,tr
+{
+	border: solid 3px #00DBFF;
+}
+
+table,th:first-child 
+{
+    border-radius: 6px 0 0 0;
+}
+
+table,th:last-child 
+{
+    border-radius: 0 6px 0 0;
+}
+
+td 
+{
+	padding: 0.2em;
 }
