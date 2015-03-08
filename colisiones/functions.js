@@ -82,6 +82,18 @@ dispLineal.prototype.pruebaLineal=function (llave) {
 }
 
 
+dispLineal.prototype.getArray=function() {
+    return this.array;
+}
+
+dispLineal.prototype.rehash=function(array) {
+
+   for (var i = 0; i < array.length; i++) {
+       this.pruebaLineal(array[i].llave);
+       console.log("aaaa");
+   }
+}
+
 dispLineal.prototype.mostrarTabla=function() {
 
     var html="<table>";
@@ -219,7 +231,22 @@ $(function () {
     });
 
     $("#btonRehasEL").on("click",function(){
+        var reElObj;
+        m=window.prompt("Inserte el nuevo numero maximo de llaves","");
         
+        if(primo(m)){
+            reElObj=new dispLineal(m);
+            reElObj.initArray();
+            reElObj.rehash(elObj.getArray());
+            elObj=reElObj;
+            var html=elObj.mostrarTabla();
+            $("#contenido-EL").html(html);
+            $("#mensaje-EL").html("Rehash completado...");    
+        }
+        else{
+            $("#contenido-EL").html("");
+            $("#mensaje-EL").html("No es primo o no es una longitud valida...");
+        }
     });
 
 
