@@ -6,7 +6,11 @@
 	<link rel="stylesheet" type="text/css" href="normalize.css">
 	<link rel="stylesheet" type="text/css" href="styles.css">
 	<script type="text/javascript" src="jquery-1.11.2.min.js"></script>
-	<script type="text/javascript" src="functions.js"></script>
+	<script type="text/javascript" src="primo.js"></script>
+	<script type="text/javascript" src="functionsES.js"></script>
+	<script type="text/javascript" src="functionsEL.js"></script>
+	<script type="text/javascript" src="functionsDH.js"></script>
+	<script type="text/javascript" src="functionsCU.js"></script>
 
 </head>
 <body>
@@ -14,23 +18,6 @@
 	<header class="Header">
 			<nav class="MainMenu">
 				<h1 class="Header-name ">Resolución de Colisiones</h1>
-				<ul class="MainMenu-list">
-					<li class="MainMenu-item">
-						<a href="#ES" class="MainMenu-itemLink">Encadenamiento Separado</a>
-					</li>
-					<li class="MainMenu-item">
-						<a href="#EL" class="MainMenu-itemLink">Encadenamiento Lineal</a>
-					</li>
-					<li class="MainMenu-item">
-						<a href="#DH" class="MainMenu-itemLink">Doble Hash</a>
-					</li>
-					<li class="MainMenu-item">
-						<a href="#PC" class="MainMenu-itemLink">Prueba Cuadraticá</a>
-					</li>
-					<li class="MainMenu-item">
-						<a href="#CU" class="MainMenu-itemLink">Cubetas</a>
-					</li>
-				</ul>
 			</nav>		
 	</header>
 	<section class="Main-section">
@@ -55,24 +42,14 @@
 			<div id="mensaje-EL" class="mensaje"></div>
 		</article>
 		<article id="DH" class="Doblehash">
-			<h2 class="title  u-title">Doble Hash</h2>
-			<input  id="textES" type="text" placeholder="Insertar Llave"/>
+			<h2 class="title  u-title">Disperción Cuadratica</h2>
+			<input  id="textDH" type="text" placeholder="Insertar Llave"/>
 			<button id="btonInitDH">Inicializar</button>
 			<button id="btonListDH">Listar</button>
 			<button id="btonInsertDH">Insertar</button>
 			<button id="btonRehasDH">Re-Hash</button>
 			<div id="contenido-DH" class="contenido"></div>
 			<div id="mensaje-DH" class="mensaje"></div>
-		</article>
-		<article id="PU" class="Prueba">
-			<h2 class="title  u-title">Prueba Cuadraticá</h2>
-			<input  id="textPU"type="text" placeholder="Insertar Llave"/>
-			<button id="btonInitPU">Inicializar</button>
-			<button id="btonListPU">Listar</button>
-			<button id="btonInsertPU">Insertar</button>
-			<button id="btonRehasPU">Re-Hash</button>
-			<div id="contenido-PU" class="contenido"></div>
-			<div id="mensaje-PU" class="mensaje"></div>
 		</article>
 		<article id="CU" class="Cubetas">
 			<h2 class="title  u-title">Cubetas</h2>

@@ -1,0 +1,33 @@
+.main
+{
+	padding-left: 1rem;
+}
+
+.formulario input
+{
+	width: 400px;
+}
+
+.resultado
+{
+	background: lightgrey;
+	content: "";
+	display: inline-block;
+	margin: .5rem;
+}
+
+.message
+{
+	padding-left: 1rem;
+}
+
+table td
+{
+	border: 2px solid black;
+
+}
+
+td
+{
+	text-align: center;
+}
