@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Grafos</title>
+  <script type="text/javascript" src="dist/vis.js"></script>
+  <link href="normalize.css" rel="stylesheet" type="text/css" />
+  <link href="dist/vis.css" rel="stylesheet" type="text/css" />
+  <link href="estilos.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="dist/jquery-1.11.2.min.js"></script>
+</head>
+<body>
+    <h1>Grafos - Recorridos - </h1>
+      <div>
+        <p>"Hacer <strong>click</strong> dentro del canvas para agregar un nodo"</p> 
+        <button id="matrizbtn">Generar Matriz Incidencia</button>
+      </div>
+      <div id="mynetwork"></div>
+      <div id="matriz">
+        <h2>Matriz de adyacencia</h2>
+        <div id="matrizInc"></div>
+        <button id="adyacenciabtn" >Asignar Adyacencia</button>
+      </div>
+      <input type='text' id="inputrecorrido" placeholder="Ráiz recorridos "  />
+      <button id="recorridosbtn">Recorrido DFS & BFS</button>
+      <div id="results">
+        <div id="mynetworkdfs"></div>
+        <div id="mynetworkbfs"></div>
+      </div>
+</body>
+</html>
+ <script type="text/javascript" src="functions.js"></script>
+
+<script type="text/javascript">
+
+//clase nodos
+node=function(){
+  var id;
+  var aristas;
+  var visitado;
+}
+
+//variables de entorno 
+var nodos=[];
+var matriz=[];
+
+var pilaDFS=[];
+var pilaBFS=[];
+var nodosDFS=[];
+var nodosBFS=[];
+
+var grafoCompleto=false;
+
+//variables para usar la libreria vis.js
+//var container;
+//var data;
+//var options;
+var network;
+var networkdfs;
+var networkbfs;
+
+//inicializa el arreglo de nodos con el nodo '0' por defecto
+function initNodos() {
+    nodos[0]=new node();
+    nodos[0].id=0;
+    nodos[0].aristas=[];
+    nodos[0].visitado=false;
+}
+
+//agrega un nodo al arrglo de nodos
+function agregarNodo () {
+  var tempNodo= new node();
+  tempNodo.id=nodos[nodos.length-1].id;
+  tempNodo.aristas=[];
+  tempNodo.visitado=false;
+  tempNodo.id++;
+  nodos.push(tempNodo);
+}
+
+//crea el arreglo bidimencional para guardar la matriz de adyacencia
+function generarMatriz(){
+  for (var i = 0; i < nodos.length; i++) {
+    matriz[i]=[];
+  }
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j < nodos.length; j++) {
+      matriz[i][j]=0;
+    }
+  }
+
+}
+
+//crear la tabla y los iputs de la matriz de adyacencia
+function dibujarMatriz(){
+  generarMatriz();
+
+  var html = "<table border=1>";
+
+  for (var i = 0; i < nodos.length; i++) {
+    html = html+"<tr>";
+
+    for (var j = 0; j < nodos.length; j++) {
+      html = html+"<td>";        
+      html = html+"<input type='text' id='input"+i+"_"+j+"' placeholder=("+i+","+j+") />";
+      html = html+"</td>";
+    }
+    html = html+"</tr>";
+  }  
+
+  html = html+"</table>";
+  
+
+  $("#matrizInc").html( html );
+}
+
+//asigna la matriz de adyacencia
+function asignarAdyacencia() { 
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j < nodos.length; j++) {
+      temp="#input"+i+"_"+j;
+      if(temp==""){
+        matriz[i][j]=0;  
+      }else{
+        matriz[i][j]=$(temp).val();  
+      }
+    }
+  }  
+
+}
+
+//asigna a nodos su lista de adyacencia corresponciente
+function asignarListaAdyacencia () {
+    for (var i = 0; i < nodos.length; i++) {
+      for (var j = 0; j < nodos.length; j++) {
+        if(matriz[i][j]!=0){
+          nodos[i].aristas.push(j);          
+        }
+      }
+    }
+}
+
+
+//-----funciones para el uso de la libreria vis.js
+window.onresize = function () {
+  network.redraw()
+};
+
+function destroy() {
+  if (network !== null) {
+    network.destroy();
+    network = null;
+  }
+}
+
+function draw() {
+  destroy();
+
+  container = document.getElementById('mynetwork');
+  options = {
+    width: '400px',
+    height: '400px',
+    edges:{
+      arrowScaleFactor : '0.0'  
+    }
+  };
+
+
+  data.dot="dinetwork {"
+  
+  for (var i = 0; i < nodos.length; i++) {
+      data.dot=data.dot+nodos[i].id+";";
+  }
+
+  if(grafoCompleto==true){
+   for (var i = 0; i < nodos.length; i++) {
+      for (var j = i; j < nodos.length; j++) {
+        if(matriz[i][j]!=0){
+          temp=i+" -> "+j+";";
+          data.dot=data.dot+temp;
+        }
+      }
+    } 
+  }
+
+  data.dot=data.dot+"}";
+  network = new vis.Network(container, data, options);
+}
+
+
+function drawResultDFS(idGrafo) {
+  
+  container = document.getElementById(idGrafo);
+  
+  options = {
+    width: '400px',
+    height: '400px',
+    hierarchicalLayout: {
+      layout: 'direction'
+    }
+  };
+
+  data.dot="dinetwork {"
+  
+  for (var i = 0; i < nodos.length; i++) {
+      data.dot=data.dot+nodos[i].id+";";
+  }
+
+  data.dot=data.dot+aristasDFS;
+  data.dot=data.dot+"}";
+  
+  
+  networkdfs = new vis.Network(container, data, options);
+}
+
+function drawResultBFS(idGrafo) {
+  
+  container = document.getElementById(idGrafo);
+  
+  options = {
+    width: '400px',
+    height: '400px',
+    hierarchicalLayout: {
+      layout: 'direction'
+    }
+  };
+
+  data.dot="dinetwork {"
+  
+  for (var i = 0; i < nodos.length; i++) {
+      data.dot=data.dot+nodos[i].id+";";
+  }
+
+  data.dot=data.dot+aristasBFS;
+  data.dot=data.dot+"}";
+  
+  
+  networkbfs = new vis.Network(container, data, options);
+}
+
+//-----funciones recorrido DFS(prpfundidad) y BFS(anchura)
+
+var aristasDFS;
+var aristasBFS;
+
+function initNodosDFS(){
+  nodosDFS=JSON.parse(JSON.stringify(nodos));
+  aristasDFS="";
+}
+
+function initNodosBFS(){
+  nodosBFS=JSON.parse(JSON.stringify(nodos));
+  aristasBFS="";
+}
+
+function DFS (idnodoRaiz) {
+  var tempId;
+  var listaAdyacencia=[];
+  if(idnodoRaiz!=null){
+    nodosDFS[idnodoRaiz].visitado=true;
+    listaAdyacencia=nodosDFS[idnodoRaiz].aristas.slice(0);
+    while(listaAdyacencia.length>0){
+      tempId=listaAdyacencia.pop();
+      if(nodosDFS[tempId].visitado==false){
+        //agrega los nodos en formato DOT para graficar
+        aristasDFS=aristasDFS+idnodoRaiz+" -> "+tempId+"; ";
+        DFS(tempId);
+      }
+    }
+  }
+  console.log("DFS: "+aristasDFS);
+}
+
+function BFS (idnodoRaiz) {
+  var tempId;
+  var tempLista;
+  var colaAdyacencia=[];
+  var listaAdyacencia=[];
+
+  if(idnodoRaiz!=null){
+    colaAdyacencia.push(idnodoRaiz);
+    nodosBFS[idnodoRaiz].visitado=true;
+    while(colaAdyacencia.length>0){
+      
+      tempId=colaAdyacencia.shift();
+      listaAdyacencia=nodosBFS[tempId].aristas.slice(0);
+
+      while(listaAdyacencia.length>0){
+        tempLista=listaAdyacencia.pop();
+        if(nodosBFS[tempLista].visitado==false){
+          nodosBFS[tempLista].visitado=true;
+          colaAdyacencia.push(tempLista);  
+          //agrega los nodos en formato DOT para graficar
+          aristasBFS=aristasBFS+tempId+" -> "+tempLista+"; ";
+        }
+      }  
+    }
+  }
+  console.log("BFS: "+aristasBFS);
+}
+
+
+
+//------------------grafo por defecto
+$(function () {
+
+    initNodos();
+
+    container = document.getElementById('mynetwork');
+    data = {
+      dot: ''
+    };
+    options = {
+      width: '400px',
+      height: '400px',
+      edges:{
+        arrowScaleFactor : '0.0'  
+      }
+    };
+    data.dot="dinetwork {"
+    
+    for (var i = 0; i < nodos.length; i++) {
+        data.dot=data.dot+nodos[i].id+";";
+    }
+
+    data.dot=data.dot+"}";
+    network = new vis.Network(container, data, options);
+
+});
+
+</script>
+
+

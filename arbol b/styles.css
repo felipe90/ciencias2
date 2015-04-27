@@ -1,0 +1,47 @@
+.main
+{
+	padding-left: 1rem;
+}
+
+.formulario input
+{
+	width: 400px;
+}
+
+.resultado
+{
+	
+	background: lightgrey;
+	content: "";
+	display: inline-block;
+}
+
+.arbolB{
+	margin-top: 0.5 rem;
+}
+
+
+.message
+{
+	padding-left: 1 rem;
+}
+
+
+canvas{
+	display: inline-block;
+	height: 300px;
+	width: 500px
+	border: 1px solid black;
+	margin-left: 1rem;	
+}
+
+table td
+{
+	border: 2px solid black;
+
+}
+
+td
+{
+	text-align: center;
+}

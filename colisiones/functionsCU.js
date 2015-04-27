@@ -34,11 +34,11 @@ cubeta.prototype.initArray=function () {
 
 cubeta.prototype.crearCubeta=function(){
     
+    
     while(this.insertados!=this.llaves.length){
-        this.initArray();//inicializa la cubeta
-
+       this.initArray();//inicializa la cubeta
         //inserta las llaves
-        for(var j=0;j<this.llaves.length;i++){
+        for(var j=0;j<this.llaves.length;j++){
             this.exp=parseFloat( this.insertados/(this.n*3) );
             if(this.exp<0.80){
                 this.mod=this.llaves[j]%this.n;
@@ -50,6 +50,7 @@ cubeta.prototype.crearCubeta=function(){
                     continue;
                 }
             }
+            this.insertados=0;
             /// expansion total;
             this.n=this.n*2;
             break;
