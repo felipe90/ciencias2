@@ -2,10 +2,11 @@
 //------------------listeners
 $(function () {
 
-  $("#dfsbtn").on("click",function(){
-    var nodotxt=$("#inputdfs").val();
-    DFS(nodotxt);
-    drawResult('mynetworkdfs');
+  $("#floydbtn").on("click",function(){
+    initMatrizFloyd ();
+    ejecutarFloyd();
+    $('#mynetworkbfs').html(dibujarTabla (matrizFloyd));
+    $('#mynetworkbfs').append(resultadosFloyd(matrizFloyd));
   });
 
   $("#bfsbtn").on("click",function(){
@@ -27,8 +28,7 @@ $(function () {
   $("#adyacenciabtn").on("click",function(){
     asignarAdyacencia();
     asignarListaAdyacencia();
-    grafoCompleto=true;
-    initNodosRecorrido();    
+    grafoCompleto=true;   
     draw();
   });
  

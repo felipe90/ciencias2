@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Grafos - Recorridos DFS y BFS- </title>
+  <title>Grafos - Algoritmo de Warshall</title>
   <script type="text/javascript" src="dist/vis.js"></script>
   <link href="normalize.css" rel="stylesheet" type="text/css" />
   <link href="dist/vis.css" rel="stylesheet" type="text/css" />
@@ -11,7 +11,7 @@
   <script type="text/javascript" src="dist/jquery-1.11.2.min.js"></script>
 </head>
 <body>
-    <h1>Grafos - Recorridos DFS y BFS- </h1>
+    <h1>Grafos - Algoritmo de Warshall</h1>
       <div>
         <p>"Hacer <strong>click</strong> dentro del canvas para agregar un nodo"</p> 
         <button id="matrizbtn">Generar Matriz de Adyacencia</button>
@@ -22,13 +22,16 @@
         <div id="matrizInc"></div>
         <button id="adyacenciabtn" >Asignar Adyacencia</button>
       </div>
-      <input type='text' id="inputrecorrido" placeholder="Ráiz recorridos "  />
-      <button id="recorridosbtn">Recorrido DFS & BFS</button>
-      <div id="results">
-        <div id="mynetworkdfs"></div>
-        <div id="mynetworkbfs"></div>
+      <!-- <input type='text' id="inputwarshall" placeholder="Ráiz Warshall "  /> -->
+      <button id="warshallbtn">Ejecutar algoritmo de Warshall</button>
+        <div id="mynetworkdfs">
+          <p>Matriz Warshall</p>
+        </div>
       </div>
 </body>
+<footer>
+  <p>Nota= En el de floyd, el resultado -1 en la matriz representa distancia NO FINITA. Es decir, no se puede llegar a ese destino desde el origen.</p>
+</footer>
 </html>
  <script type="text/javascript" src="functions.js"></script>
 
@@ -39,6 +42,11 @@ node=function(){
   var id;
   var aristas;
   var visitado;
+}
+
+cel=function(id,ruta) {
+  this.id=id;
+  this.ruta=ruta;
 }
 
 //variables de entorno 
@@ -86,7 +94,7 @@ function generarMatriz(){
 
   for (var i = 0; i < nodos.length; i++) {
     for (var j = 0; j < nodos.length; j++) {
-      matriz[i][j]=0;
+      matriz[i][j]=new cel(0,'');
     }
   }
 
@@ -96,7 +104,7 @@ function generarMatriz(){
 function dibujarMatriz(){
   generarMatriz();
 
-  var html = "<table border=1>";
+  var html = "<table class='fija' border=1>";
 
   for (var i = 0; i < nodos.length; i++) {
     html = html+"<tr>";
@@ -123,7 +131,7 @@ function asignarAdyacencia() {
       if(temp==""){
         matriz[i][j]=0;  
       }else{
-        matriz[i][j]=$(temp).val();  
+        matriz[i][j].id=$(temp).val();  
       }
     }
   }  
@@ -161,9 +169,6 @@ function draw() {
   options = {
     width: '400px',
     height: '400px',
-    edges:{
-      arrowScaleFactor : '0.0'  
-    }
   };
 
 
@@ -174,10 +179,11 @@ function draw() {
   }
 
   if(grafoCompleto==true){
-   for (var i = 0; i < nodos.length; i++) {
-      for (var j = i; j < nodos.length; j++) {
-        if(matriz[i][j]!=0){
-          temp=i+" -> "+j+";";
+   for (var i = 0; i < nodos.length; i++) { 
+      for (var j = 0; j < nodos.length; j++) {
+        if(matriz[i][j].id!=0){
+          
+          temp=i+" -> "+j+"[label="+matriz[i][j].id+"];";
           data.dot=data.dot+temp;
         }
       }
@@ -189,118 +195,100 @@ function draw() {
 }
 
 
-function drawResultDFS(idGrafo) {
-  
-  container = document.getElementById(idGrafo);
-  
-  options = {
-    width: '400px',
-    height: '400px',
-    hierarchicalLayout: {
-      layout: 'direction'
-    }
-  };
+//------funciones algoritmo warshall
+var matrizWarshall=[];
+var matrizFloyd=[];
 
-  data.dot="dinetwork {"
-  
-  for (var i = 0; i < nodos.length; i++) {
-      data.dot=data.dot+nodos[i].id+";";
+function initMatrizWarshall () {
+  matrizWarshall=JSON.parse(JSON.stringify(matriz));
+}
+
+function initMatrizFloyd () {
+  matrizFloyd=JSON.parse(JSON.stringify(matriz));
+}
+
+function ejecutarWarshall () {
+  for (var k = 0; k < matriz.length; k++) {
+    for (var i = 0; i < matriz.length; i++) {
+      for (var j = 0; j < matriz.length; j++) {
+         matrizWarshall[i][j].id=warshall(i,j,k);
+         //matrizWarshall[i][j].id=max(matrizWarshall[i][j].id,matrizWarshall[i][k].id&&matrizWarshall[k][j].id);
+         //matrizWarshall[i][j].id=(matrizWarshall[i][j].id) || (matrizWarshall[i][k].id)&&(matrizWarshall[k][j].id);
+      }
+    } 
+  console.log(matrizWarshall);
   }
-
-  data.dot=data.dot+aristasDFS;
-  data.dot=data.dot+"}";
-  
-  
-  networkdfs = new vis.Network(container, data, options);
 }
 
-function drawResultBFS(idGrafo) {
-  
-  container = document.getElementById(idGrafo);
-  
-  options = {
-    width: '400px',
-    height: '400px',
-    hierarchicalLayout: {
-      layout: 'direction'
-    }
-  };
+function max(a, b)
+{                                                       ;
+if(a>b)
+ return(a);
+else
+ return(b);
+}
 
-  data.dot="dinetwork {"
-  
-  for (var i = 0; i < nodos.length; i++) {
-      data.dot=data.dot+nodos[i].id+";";
+function warshall (i,j,k) {
+  if ( (matrizWarshall[i][j].id==1) || ((matrizWarshall[i][k].id==1)&&(matrizWarshall[k][j].id==1))  ){
+      if(matrizWarshall[i][j].ruta==1){
+        matrizWarshall[i][j].ruta=matrizWarshall[i][j].ruta+k;
+      }else if( (matrizWarshall[i][k].id==1)&&(matrizWarshall[k][j].id==1) ){
+        matrizWarshall[i][j].ruta=matrizWarshall[i][j].ruta+"d";
+      }
+
+    return 1;
+  }else{
+      matrizWarshall[i][j].ruta=matrizWarshall[i][j].ruta+(k)+"-";
+    return 0;
   }
-
-  data.dot=data.dot+aristasBFS;
-  data.dot=data.dot+"}";
-  
-  
-  networkbfs = new vis.Network(container, data, options);
 }
 
-//-----funciones recorrido DFS(prpfundidad) y BFS(anchura)
-
-var aristasDFS;
-var aristasBFS;
-
-function initNodosDFS(){
-  nodosDFS=JSON.parse(JSON.stringify(nodos));
-  aristasDFS="";
-}
-
-function initNodosBFS(){
-  nodosBFS=JSON.parse(JSON.stringify(nodos));
-  aristasBFS="";
-}
-
-function DFS (idnodoRaiz) {
-  var tempId;
-  var listaAdyacencia=[];
-  if(idnodoRaiz!=null){
-    nodosDFS[idnodoRaiz].visitado=true;
-    listaAdyacencia=nodosDFS[idnodoRaiz].aristas.slice(0);
-    while(listaAdyacencia.length>0){
-      tempId=listaAdyacencia.pop();
-      if(nodosDFS[tempId].visitado==false){
-        //agrega los nodos en formato DOT para graficar
-        aristasDFS=aristasDFS+idnodoRaiz+" -> "+tempId+"; ";
-        DFS(tempId);
+function ejecutarFloyd () {
+  for (var k = 0; k < matriz.length; k++) {
+    for (var i = 0; i < matriz.length; i++) {
+      for (var j = 0; j < matriz.length; j++) {
+        if(  (matrizFloyd[i][k]!=-1)&&(matrizFloyd[k][j]!=-1) ) {
+          matrizFloyd[i][j]=floyd(matrizFloyd[i][j],matrizFloyd[i][k]+matrizFloyd[k][j]);
+        }   
       }
     }
   }
-  console.log("DFS: "+aristasDFS);
 }
 
-function BFS (idnodoRaiz) {
-  var tempId;
-  var tempLista;
-  var colaAdyacencia=[];
-  var listaAdyacencia=[];
-
-  if(idnodoRaiz!=null){
-    colaAdyacencia.push(idnodoRaiz);
-    nodosBFS[idnodoRaiz].visitado=true;
-    while(colaAdyacencia.length>0){
-      
-      tempId=colaAdyacencia.shift();
-      listaAdyacencia=nodosBFS[tempId].aristas.slice(0);
-
-      while(listaAdyacencia.length>0){
-        tempLista=listaAdyacencia.pop();
-        if(nodosBFS[tempLista].visitado==false){
-          nodosBFS[tempLista].visitado=true;
-          colaAdyacencia.push(tempLista);  
-          //agrega los nodos en formato DOT para graficar
-          aristasBFS=aristasBFS+tempId+" -> "+tempLista+"; ";
-        }
-      }  
-    }
+function floyd (a,b) {
+  if ((a==-1)&&(b==-1)) {
+    return -1;
+  }else if (a==-1) {
+    return b;
+  }else if (b==-1) {
+    return a;
+  }else if (a>b) {
+    return b;
+  }else{
+    return a;
   }
-  console.log("BFS: "+aristasBFS);
 }
 
 
+//-----funciones para dibujar las matrices de floyd y warshall
+
+function dibujarTabla (m) {
+  var html = "<table class='fija' border=1>";
+
+  for (var i = 0; i < nodos.length; i++) {
+    html = html+"<tr>";
+
+    for (var j = 0; j < nodos.length; j++) {
+      html = html+"<td>";        
+      html = html+"<p>"+m[i][j].ruta+"</p>";
+      html = html+"</td>";
+    }
+    html = html+"</tr>";
+  }  
+
+  html = html+"</table>";
+  return html;
+}
 
 //------------------grafo por defecto
 $(function () {

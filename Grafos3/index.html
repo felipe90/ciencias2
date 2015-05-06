@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Grafos - Recorridos DFS y BFS- </title>
+  <title>Grafos - Algoritmo de Warshall y Floyd</title>
   <script type="text/javascript" src="dist/vis.js"></script>
   <link href="normalize.css" rel="stylesheet" type="text/css" />
   <link href="dist/vis.css" rel="stylesheet" type="text/css" />
@@ -11,7 +11,7 @@
   <script type="text/javascript" src="dist/jquery-1.11.2.min.js"></script>
 </head>
 <body>
-    <h1>Grafos - Recorridos DFS y BFS- </h1>
+    <h1>Grafos - Algoritmo de Floyd</h1>
       <div>
         <p>"Hacer <strong>click</strong> dentro del canvas para agregar un nodo"</p> 
         <button id="matrizbtn">Generar Matriz de Adyacencia</button>
@@ -22,13 +22,17 @@
         <div id="matrizInc"></div>
         <button id="adyacenciabtn" >Asignar Adyacencia</button>
       </div>
-      <input type='text' id="inputrecorrido" placeholder="Ráiz recorridos "  />
-      <button id="recorridosbtn">Recorrido DFS & BFS</button>
+      <button id="floydbtn">Ejecutar algoritmo de Floyd</button>
       <div id="results">
-        <div id="mynetworkdfs"></div>
-        <div id="mynetworkbfs"></div>
+        <div id="mynetworkbfs">
+          <p>Matriz Floyd</p>
+        </div>
       </div>
 </body>
+<footer>
+  <p>99 = Costo de una arista para vertices no adjuntos.</p>
+  <p>X indica que la matriz es simétrica.</p>
+</footer>
 </html>
  <script type="text/javascript" src="functions.js"></script>
 
@@ -39,6 +43,11 @@ node=function(){
   var id;
   var aristas;
   var visitado;
+}
+
+cel=function(id,ruta) {
+  this.id=id;
+  this.ruta=ruta;
 }
 
 //variables de entorno 
@@ -96,7 +105,7 @@ function generarMatriz(){
 function dibujarMatriz(){
   generarMatriz();
 
-  var html = "<table border=1>";
+  var html = "<table class='fija' border=1>";
 
   for (var i = 0; i < nodos.length; i++) {
     html = html+"<tr>";
@@ -111,20 +120,34 @@ function dibujarMatriz(){
 
   html = html+"</table>";
   
-
   $("#matrizInc").html( html );
+
+  //llenar la matrix simetrica con 'X' y -1 donde no halla arista
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j <=i; j++) {
+      if(i==j) {
+        $('#input'+i+'_'+j).val(0);
+      }else{
+        $('#input'+i+'_'+j).val('X');
+      }
+    }
+  }  
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = i+1; j < nodos.length; j++) {
+      $('#input'+i+'_'+j).val(99); 
+    }
+  }
 }
 
 //asigna la matriz de adyacencia
 function asignarAdyacencia() { 
   for (var i = 0; i < nodos.length; i++) {
-    for (var j = 0; j < nodos.length; j++) {
-      temp="#input"+i+"_"+j;
-      if(temp==""){
-        matriz[i][j]=0;  
-      }else{
-        matriz[i][j]=$(temp).val();  
-      }
+    for (var j = i; j < nodos.length; j++) {
+      var temp=$("#input"+i+"_"+j).val();
+      matriz[i][j]=(temp);
+      matriz[j][i]=(temp);
     }
   }  
 
@@ -134,7 +157,7 @@ function asignarAdyacencia() {
 function asignarListaAdyacencia () {
     for (var i = 0; i < nodos.length; i++) {
       for (var j = 0; j < nodos.length; j++) {
-        if(matriz[i][j]!=0){
+        if(matriz[i][j]!=0 && matriz[i][j]!=99){
           nodos[i].aristas.push(j);          
         }
       }
@@ -174,10 +197,11 @@ function draw() {
   }
 
   if(grafoCompleto==true){
-   for (var i = 0; i < nodos.length; i++) {
+   for (var i = 0; i < nodos.length; i++) { 
       for (var j = i; j < nodos.length; j++) {
-        if(matriz[i][j]!=0){
-          temp=i+" -> "+j+";";
+        if(matriz[i][j]!=0 && matriz[i][j]!=99){
+          
+          temp=i+" -> "+j+"[label="+matriz[i][j]+"];";
           data.dot=data.dot+temp;
         }
       }
@@ -189,118 +213,71 @@ function draw() {
 }
 
 
-function drawResultDFS(idGrafo) {
-  
-  container = document.getElementById(idGrafo);
-  
-  options = {
-    width: '400px',
-    height: '400px',
-    hierarchicalLayout: {
-      layout: 'direction'
-    }
-  };
+//------funciones algoritmo floyd
 
-  data.dot="dinetwork {"
-  
-  for (var i = 0; i < nodos.length; i++) {
-      data.dot=data.dot+nodos[i].id+";";
-  }
+var matrizFloyd=[];
 
-  data.dot=data.dot+aristasDFS;
-  data.dot=data.dot+"}";
-  
-  
-  networkdfs = new vis.Network(container, data, options);
+function initMatrizFloyd () {
+  matrizFloyd=JSON.parse(JSON.stringify(matriz));
 }
 
-function drawResultBFS(idGrafo) {
-  
-  container = document.getElementById(idGrafo);
-  
-  options = {
-    width: '400px',
-    height: '400px',
-    hierarchicalLayout: {
-      layout: 'direction'
-    }
-  };
-
-  data.dot="dinetwork {"
-  
-  for (var i = 0; i < nodos.length; i++) {
-      data.dot=data.dot+nodos[i].id+";";
-  }
-
-  data.dot=data.dot+aristasBFS;
-  data.dot=data.dot+"}";
-  
-  
-  networkbfs = new vis.Network(container, data, options);
-}
-
-//-----funciones recorrido DFS(prpfundidad) y BFS(anchura)
-
-var aristasDFS;
-var aristasBFS;
-
-function initNodosDFS(){
-  nodosDFS=JSON.parse(JSON.stringify(nodos));
-  aristasDFS="";
-}
-
-function initNodosBFS(){
-  nodosBFS=JSON.parse(JSON.stringify(nodos));
-  aristasBFS="";
-}
-
-function DFS (idnodoRaiz) {
-  var tempId;
-  var listaAdyacencia=[];
-  if(idnodoRaiz!=null){
-    nodosDFS[idnodoRaiz].visitado=true;
-    listaAdyacencia=nodosDFS[idnodoRaiz].aristas.slice(0);
-    while(listaAdyacencia.length>0){
-      tempId=listaAdyacencia.pop();
-      if(nodosDFS[tempId].visitado==false){
-        //agrega los nodos en formato DOT para graficar
-        aristasDFS=aristasDFS+idnodoRaiz+" -> "+tempId+"; ";
-        DFS(tempId);
+function ejecutarFloyd () {
+  for (var k = 0; k < matriz.length; k++) {
+    for (var i = 0; i < matriz.length; i++) {
+      for (var j = 0; j < matriz.length; j++) {
+        if(i==j){
+          matrizFloyd[i][j]=0;
+        }
+        else{
+          var temp=min(matrizFloyd[i][j],matrizFloyd[i][k]+matrizFloyd[k][j]);
+          matrizFloyd[i][j]=parseInt(temp);
+        }
       }
     }
   }
-  console.log("DFS: "+aristasDFS);
 }
 
-function BFS (idnodoRaiz) {
-  var tempId;
-  var tempLista;
-  var colaAdyacencia=[];
-  var listaAdyacencia=[];
 
-  if(idnodoRaiz!=null){
-    colaAdyacencia.push(idnodoRaiz);
-    nodosBFS[idnodoRaiz].visitado=true;
-    while(colaAdyacencia.length>0){
-      
-      tempId=colaAdyacencia.shift();
-      listaAdyacencia=nodosBFS[tempId].aristas.slice(0);
+function min(a,b){
+ if(a<b)
+  return(a);
+ else
+  return(b);
+}
 
-      while(listaAdyacencia.length>0){
-        tempLista=listaAdyacencia.pop();
-        if(nodosBFS[tempLista].visitado==false){
-          nodosBFS[tempLista].visitado=true;
-          colaAdyacencia.push(tempLista);  
-          //agrega los nodos en formato DOT para graficar
-          aristasBFS=aristasBFS+tempId+" -> "+tempLista+"; ";
-        }
-      }  
+//-----funciones para dibujar las matrices de floyd y warshall
+
+function dibujarTabla (m) {
+  var html = "<table class='fija' border=1>";
+
+  for (var i = 0; i < nodos.length; i++) {
+    html = html+"<tr>";
+
+    for (var j = 0; j < nodos.length; j++) {
+      html = html+"<td>";        
+      html = html+"<p>"+m[i][j]+"</p>";
+      html = html+"</td>";
+    }
+    html = html+"</tr>";
+  }  
+
+  html = html+"</table>";
+  return html;
+}
+
+function resultadosFloyd(m){
+   var html="<p>caminos minimos(fila-columna=>valor)</p>";
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j < nodos.length; j++) {
+      if(i!=j){        
+        html = html+"<p>"+i+"-"+j+"=>"+m[i][j]+"</p>";
+      }
     }
   }
-  console.log("BFS: "+aristasBFS);
+
+  return html; 
 }
-
-
 
 //------------------grafo por defecto
 $(function () {

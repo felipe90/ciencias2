@@ -2,10 +2,10 @@
 //------------------listeners
 $(function () {
 
-  $("#dfsbtn").on("click",function(){
-    var nodotxt=$("#inputdfs").val();
-    DFS(nodotxt);
-    drawResult('mynetworkdfs');
+  $("#warshallbtn").on("click",function(){
+    initMatrizWarshall ();
+    ejecutarWarshall();
+    $('#mynetworkdfs').html(dibujarTabla (matrizWarshall));
   });
 
   $("#bfsbtn").on("click",function(){
@@ -27,8 +27,7 @@ $(function () {
   $("#adyacenciabtn").on("click",function(){
     asignarAdyacencia();
     asignarListaAdyacencia();
-    grafoCompleto=true;
-    initNodosRecorrido();    
+    grafoCompleto=true;   
     draw();
   });
  
