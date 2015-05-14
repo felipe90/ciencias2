@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Grafos - Algoritmo de Warshall y Floyd</title>
+  <title>Grafos - Algoritmo de Floyd</title>
   <script type="text/javascript" src="dist/vis.js"></script>
   <link href="normalize.css" rel="stylesheet" type="text/css" />
   <link href="dist/vis.css" rel="stylesheet" type="text/css" />
@@ -216,9 +216,16 @@ function draw() {
 //------funciones algoritmo floyd
 
 var matrizFloyd=[];
+var matrizRecorridos=[];
 
 function initMatrizFloyd () {
   matrizFloyd=JSON.parse(JSON.stringify(matriz));
+  for (var i = 0; i < nodos.length; i++) {
+      matrizRecorridos[i]=[];
+    for (var j = 0; j < nodos.length; j++) {
+      matrizRecorridos[i][j]="";
+    }
+  }
 }
 
 function ejecutarFloyd () {
@@ -235,8 +242,9 @@ function ejecutarFloyd () {
       }
     }
   }
-}
 
+  generarRecorridosDFS();
+}
 
 function min(a,b){
  if(a<b)
@@ -244,6 +252,49 @@ function min(a,b){
  else
   return(b);
 }
+
+var aristasDFS="";
+var aristasBFS;
+var nodosDFS;
+
+function initNodosDFS(){
+  nodosDFS=JSON.parse(JSON.stringify(nodos));
+}
+
+function DFS (idnodoRaiz,nodofinal) {
+  var tempId;
+  var listaAdyacencia=[];
+    if(idnodoRaiz!=null){
+      nodosDFS[idnodoRaiz].visitado=true;
+      listaAdyacencia=JSON.parse(JSON.stringify(nodosDFS[idnodoRaiz].aristas));
+      listaAdyacencia.sort(function(a,b){return b-a});
+
+      while(listaAdyacencia.length>0){
+        tempId=listaAdyacencia.pop();
+        if(nodosDFS[tempId].visitado==false){
+          //agrega los nodos en formato DOT para graficar
+          if(tempId!=nodofinal){
+            aristasDFS=aristasDFS+"->"+tempId;
+            DFS(tempId,nodofinal);
+          }
+        }
+      }   
+
+    }
+}
+
+function generarRecorridosDFS(){
+ 
+  for (var i = 0; i < matriz.length; i++) {
+    for (var j = 0; j < matriz.length; j++) {
+        initNodosDFS();
+        DFS(i,j);
+        matrizRecorridos[i][j]=aristasDFS;
+        aristasDFS="";
+    }
+  }
+}
+
 
 //-----funciones para dibujar las matrices de floyd y warshall
 
@@ -266,7 +317,7 @@ function dibujarTabla (m) {
 }
 
 function resultadosFloyd(m){
-   var html="<p>caminos minimos(fila-columna=>valor)</p>";
+   var html="";
 
   for (var i = 0; i < nodos.length; i++) {
     for (var j = 0; j < nodos.length; j++) {

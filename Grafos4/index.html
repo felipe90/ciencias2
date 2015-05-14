@@ -3,32 +3,42 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Grafos - Algoritmo de Warshall</title>
-  <script type="text/javascript" src="dist/vis.js"></script>
-  <link href="normalize.css" rel="stylesheet" type="text/css" />
+  <title>Grafos - Algoritmo de KrusKal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+  <link href="css/normalize.css" rel="stylesheet" type="text/css" />
   <link href="dist/vis.css" rel="stylesheet" type="text/css" />
-  <link href="estilos.css" rel="stylesheet" type="text/css" />
+  <link href="css/estilos.css" rel="stylesheet" type="text/css" />
+  <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+
+  <script type="text/javascript" src="dist/vis.js"></script>
   <script type="text/javascript" src="dist/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="js/functions.js"></script>
+  <script type="text/javascript" src="js/materialize.min.js"></script>
 </head>
 <body>
-    <h1>Grafos - Algoritmo de Warshall</h1>
+    <h1>Grafos - Algoritmo de KrusKal</h1>
       <div>
         <p>"Hacer <strong>click</strong> dentro del canvas para agregar un nodo"</p> 
-        <button id="matrizbtn">Generar Matriz de Adyacencia</button>
+        <button class="waves-effect waves-light btn" id="matrizbtn">Generar Matriz de Adyacencia</button>
       </div>
       <div id="mynetwork"></div>
       <div id="matriz">
         <h2>- Matriz de Adyacencia -</h2>
         <div id="matrizInc"></div>
-        <button id="adyacenciabtn" >Asignar Adyacencia</button>
+        <button class="waves-effect waves-light btn" id="adyacenciabtn" >Asignar Adyacencia</button>
       </div>
-      <!-- <input type='text' id="inputwarshall" placeholder="Ráiz Warshall "  /> -->
-      <button id="warshallbtn">Ejecutar algoritmo de Warshall</button>
-        <div id="mynetworkdfs">
-          <p>Matriz Warshall</p>
+      <button class="waves-effect waves-light btn" id="floydbtn">Ejecutar algoritmo de Kruskal</button>
+      <div id="results">
+        <div id="mynetworkbfs">
+          <p>Matriz Kruskal</p>
         </div>
       </div>
 </body>
+<footer>
+  <p>99 = Costo de una arista para vertices no adjuntos.</p>
+  <p>X indica que la matriz es simétrica.</p>
+</footer>
 </html>
  <script type="text/javascript" src="functions.js"></script>
 
@@ -41,13 +51,15 @@ node=function(){
   var visitado;
 }
 
+cel=function(id,ruta) {
+  this.id=id;
+  this.ruta=ruta;
+}
 
 //variables de entorno 
 var nodos=[];
 var matriz=[];
 
-var pilaDFS=[];
-var pilaBFS=[];
 var nodosDFS=[];
 var nodosBFS=[];
 
@@ -112,20 +124,34 @@ function dibujarMatriz(){
 
   html = html+"</table>";
   
-
   $("#matrizInc").html( html );
+
+  //llenar la matrix simetrica con 'X' y -1 donde no halla arista
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j <=i; j++) {
+      if(i==j) {
+        $('#input'+i+'_'+j).val(0);
+      }else{
+        $('#input'+i+'_'+j).val('X');
+      }
+    }
+  }  
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = i+1; j < nodos.length; j++) {
+      $('#input'+i+'_'+j).val(99); 
+    }
+  }
 }
 
 //asigna la matriz de adyacencia
 function asignarAdyacencia() { 
   for (var i = 0; i < nodos.length; i++) {
-    for (var j = 0; j < nodos.length; j++) {
-      temp="#input"+i+"_"+j;
-      if(temp==""){
-        matriz[i][j]=0;  
-      }else{
-        matriz[i][j]=$(temp).val();  
-      }
+    for (var j = i; j < nodos.length; j++) {
+      var temp=$("#input"+i+"_"+j).val();
+      matriz[i][j]=(temp);
+      matriz[j][i]=(temp);
     }
   }  
 
@@ -135,7 +161,7 @@ function asignarAdyacencia() {
 function asignarListaAdyacencia () {
     for (var i = 0; i < nodos.length; i++) {
       for (var j = 0; j < nodos.length; j++) {
-        if(matriz[i][j]!=0){
+        if(matriz[i][j]!=0 && matriz[i][j]!=99){
           nodos[i].aristas.push(j);          
         }
       }
@@ -162,6 +188,9 @@ function draw() {
   options = {
     width: '400px',
     height: '400px',
+    edges:{
+      arrowScaleFactor : '0.0'  
+    }
   };
 
 
@@ -173,8 +202,8 @@ function draw() {
 
   if(grafoCompleto==true){
    for (var i = 0; i < nodos.length; i++) { 
-      for (var j = 0; j < nodos.length; j++) {
-        if(matriz[i][j]!=0){
+      for (var j = i; j < nodos.length; j++) {
+        if(matriz[i][j]!=0 && matriz[i][j]!=99){
           
           temp=i+" -> "+j+"[label="+matriz[i][j]+"];";
           data.dot=data.dot+temp;
@@ -188,12 +217,18 @@ function draw() {
 }
 
 
-//------funciones algoritmo warshall
-var matrizWarshall=[];
+//------funciones algoritmo kruskal
+
+
+
+
+//------funciones algoritmo floyd
+
+var matrizFloyd=[];
 var matrizRecorridos=[];
 
-function initMatrizWarshall () {
-  matrizWarshall=JSON.parse(JSON.stringify(matriz));
+function initMatrizFloyd () {
+  matrizFloyd=JSON.parse(JSON.stringify(matriz));
   for (var i = 0; i < nodos.length; i++) {
       matrizRecorridos[i]=[];
     for (var j = 0; j < nodos.length; j++) {
@@ -202,29 +237,30 @@ function initMatrizWarshall () {
   }
 }
 
-function ejecutarWarshall () {
+function ejecutarFloyd () {
   for (var k = 0; k < matriz.length; k++) {
     for (var i = 0; i < matriz.length; i++) {
       for (var j = 0; j < matriz.length; j++) {
-         matrizWarshall[i][j]=warshall(i,j,k);
+        if(i==j){
+          matrizFloyd[i][j]=0;
+        }
+        else{
+          var temp=min(matrizFloyd[i][j],matrizFloyd[i][k]+matrizFloyd[k][j]);
+          matrizFloyd[i][j]=parseInt(temp);
+        }
       }
-    } 
+    }
   }
 
   generarRecorridosDFS();
 }
 
-
-function warshall (i,j,k) {
-  if ( (matrizWarshall[i][j]==1) || ((matrizWarshall[i][k]==1)&&(matrizWarshall[k][j]==1))  ){
-    return 1;
-  }else{
-    return 0;
-  }
+function min(a,b){
+ if(a<b)
+  return(a);
+ else
+  return(b);
 }
-
-
-
 
 var aristasDFS="";
 var aristasBFS;
@@ -239,10 +275,12 @@ function DFS (idnodoRaiz,nodofinal) {
   var listaAdyacencia=[];
     if(idnodoRaiz!=null){
       nodosDFS[idnodoRaiz].visitado=true;
-      listaAdyacencia=nodosDFS[idnodoRaiz].aristas.slice(0);
+      listaAdyacencia=JSON.parse(JSON.stringify(nodosDFS[idnodoRaiz].aristas));
+      listaAdyacencia.sort(function(a,b){return b-a});
+
       while(listaAdyacencia.length>0){
         tempId=listaAdyacencia.pop();
-        if(nodosDFS[tempId].visitado==false && matrizWarshall[idnodoRaiz][nodofinal]==1){
+        if(nodosDFS[tempId].visitado==false){
           //agrega los nodos en formato DOT para graficar
           if(tempId!=nodofinal){
             aristasDFS=aristasDFS+"->"+tempId;
@@ -250,24 +288,22 @@ function DFS (idnodoRaiz,nodofinal) {
           }
         }
       }   
+
     }
 }
 
 function generarRecorridosDFS(){
+ 
   for (var i = 0; i < matriz.length; i++) {
     for (var j = 0; j < matriz.length; j++) {
-      if(matriz[i][j]==1){
-        matrizRecorridos[i][j]="d";
-      }
-      else if(matriz[i][j]=="" && matrizWarshall[i][j]==1){
         initNodosDFS();
         DFS(i,j);
         matrizRecorridos[i][j]=aristasDFS;
         aristasDFS="";
-      }
     }
   }
 }
+
 
 //-----funciones para dibujar las matrices de floyd y warshall
 
@@ -287,6 +323,20 @@ function dibujarTabla (m) {
 
   html = html+"</table>";
   return html;
+}
+
+function resultadosFloyd(m){
+   var html="";
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j < nodos.length; j++) {
+      if(i!=j){        
+        html = html+"<p>"+i+"-"+j+"=>"+m[i][j]+"</p>";
+      }
+    }
+  }
+
+  return html; 
 }
 
 //------------------grafo por defecto

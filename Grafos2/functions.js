@@ -5,7 +5,9 @@ $(function () {
   $("#warshallbtn").on("click",function(){
     initMatrizWarshall ();
     ejecutarWarshall();
-    $('#mynetworkdfs').html(dibujarTabla (matrizWarshall));
+    $('#mynetworkdfs').html(dibujarTabla (matrizRecorridos));
+    $('#mynetworkdfs').append("<p>Matriz Transitoria</p>");
+    $('#mynetworkdfs').append(dibujarTabla (matrizWarshall));
   });
 
   $("#bfsbtn").on("click",function(){
