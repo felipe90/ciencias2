@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Grafos - Algoritmo de KrusKal</title>
+  <title>Grafos - Algoritmo de KrusKal-</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
   <link href="css/normalize.css" rel="stylesheet" type="text/css" />
@@ -15,27 +15,36 @@
   <script type="text/javascript" src="dist/jquery-1.11.2.min.js"></script>
   <script type="text/javascript" src="js/functions.js"></script>
   <script type="text/javascript" src="js/materialize.min.js"></script>
+  <script type="text/javascript" src="js/p_queue.js"></script>
 </head>
 <body>
-    <h1>Grafos - Algoritmo de KrusKal</h1>
+    <div class="card-panel teal darken-4">
+      <h1 class="white-text accent-4">Grafos - Algoritmo de KrusKal</h1>
+    </div>
       <div>
         <p>"Hacer <strong>click</strong> dentro del canvas para agregar un nodo"</p> 
         <button class="waves-effect waves-light btn" id="matrizbtn">Generar Matriz de Adyacencia</button>
       </div>
       <div id="mynetwork"></div>
       <div id="matriz">
-        <h2>- Matriz de Adyacencia -</h2>
+        <div class="card-panel teal darken-4">
+          <h2 class="white-text accent-4">- Matriz de Adyacencia -</h2>
+        </div>
         <div id="matrizInc"></div>
         <button class="waves-effect waves-light btn" id="adyacenciabtn" >Asignar Adyacencia</button>
       </div>
       <button class="waves-effect waves-light btn" id="floydbtn">Ejecutar algoritmo de Kruskal</button>
       <div id="results">
-        <div id="mynetworkbfs">
-          <p>Matriz Kruskal</p>
+        <div id="mynetworkQueue">
+          <p>Cola de prirodad</p>
         </div>
+        <div id="mynetworkArbol">
+          <p>Arbol de expasión minimo</p>
+        </div>        
       </div>
 </body>
-<footer>
+<footer class="page-footer teal darken-1">
+  <p>La matriz de adyacencia, acepta el costo de cada aristapara vertices adjuntos y 99 para vertices no adjuntos.No puede existir un arco que parta de un vertice e incida en el</p>
   <p>99 = Costo de una arista para vertices no adjuntos.</p>
   <p>X indica que la matriz es simétrica.</p>
 </footer>
@@ -51,27 +60,17 @@ node=function(){
   var visitado;
 }
 
-cel=function(id,ruta) {
-  this.id=id;
-  this.ruta=ruta;
-}
-
 //variables de entorno 
 var nodos=[];
 var matriz=[];
 
-var nodosDFS=[];
-var nodosBFS=[];
-
 var grafoCompleto=false;
 
 //variables para usar la libreria vis.js
-//var container;
-//var data;
-//var options;
+
 var network;
-var networkdfs;
-var networkbfs;
+var networkQueue;
+var networkArbol;
 
 //inicializa el arreglo de nodos con el nodo '0' por defecto
 function initNodos() {
@@ -150,8 +149,13 @@ function asignarAdyacencia() {
   for (var i = 0; i < nodos.length; i++) {
     for (var j = i; j < nodos.length; j++) {
       var temp=$("#input"+i+"_"+j).val();
-      matriz[i][j]=(temp);
-      matriz[j][i]=(temp);
+      temp=parseInt(temp,10);
+      if(temp==0){
+        matriz[i][j]=99;
+      }else{
+        matriz[i][j]=(temp);
+        matriz[j][i]=(temp);
+      }
     }
   }  
 
@@ -218,125 +222,208 @@ function draw() {
 
 
 //------funciones algoritmo kruskal
+var matrizKruskal;
+var colaAristas;
+var padres=[];
+var maxValor=99;
+var matrizResultado=[];
+var total=0;
 
-
-
-
-//------funciones algoritmo floyd
-
-var matrizFloyd=[];
-var matrizRecorridos=[];
-
-function initMatrizFloyd () {
-  matrizFloyd=JSON.parse(JSON.stringify(matriz));
-  for (var i = 0; i < nodos.length; i++) {
-      matrizRecorridos[i]=[];
-    for (var j = 0; j < nodos.length; j++) {
-      matrizRecorridos[i][j]="";
-    }
-  }
+arista=function (src,dest,peso) {
+  this.origen=src;
+  this.destino=dest;
+  this.peso=peso;
 }
 
-function ejecutarFloyd () {
-  for (var k = 0; k < matriz.length; k++) {
+
+
+function kruskal () {
+  
+  var min=0;
+  var u=0;
+  var v=0;
+  var nAristas=1;
+  var temp;
+
+//---otros
+  var arbol=[]
+  var pertenece=[];
+  var arcos=1; 
+
+  initKruskal();
+  initAristasPrioriddad(); 
+
+  for (var i = 0; i < matriz.length; i++) {
+    arbol[i]=[matriz.length,0]
+    pertenece[i]=i;
+  }
+
+  
+  while(arcos<matriz.length){
+    min=99;
+    
     for (var i = 0; i < matriz.length; i++) {
       for (var j = 0; j < matriz.length; j++) {
-        if(i==j){
-          matrizFloyd[i][j]=0;
+        if(matrizKruskal[i][j]<min && matrizKruskal[i][j]!=0 &&pertenece[i]!=pertenece[j]){
+          min=matrizKruskal[i][j];
+          u=i;
+          v=j;  
         }
-        else{
-          var temp=min(matrizFloyd[i][j],matrizFloyd[i][k]+matrizFloyd[k][j]);
-          matrizFloyd[i][j]=parseInt(temp);
+      }     
+    }
+    
+    if(pertenece[u]!=pertenece[v]){
+      arbol[u][v]=min;
+      arbol[v][u]=min;
+
+      console.log("arista "+u+"->"+v+" = "+min);
+      matrizResultado[u][v]=min;
+      total+=min;
+
+      var temp=pertenece[v];
+      pertenece[v]=pertenece[u];
+      for (var k = 0; k < matriz.length; k++) {
+        if(pertenece[k]==temp){
+          pertenece[k]=pertenece[u];
         }
       }
+      arcos++;
+      temp=colaAristas.heap[arcos];
+
+    }
+  }
+  
+  console.log(arbol);
+  console.log("peso minimo: "+total);
+/*--------- uso cola prioridad
+    for (var i = 1; i <= colaAristas.length; i++) {
+      temp=colaAristas.heap[i];
+
+      if(temp.priority<min){
+        min=temp.priority;
+        u=temp.data.src;
+        v=temp.data.dest;
+      }
+      
+    }
+  */
+}    
+
+
+function initKruskal() {
+  matrizKruskal=JSON.parse(JSON.stringify(matriz));
+  
+  for (var i = 0; i < nodos.length; i++) {
+      matrizResultado[i]=[];
+    for (var j = 0; j < nodos.length; j++) {
+      matrizResultado[i][j]=0;
     }
   }
 
-  generarRecorridosDFS();
-}
-
-function min(a,b){
- if(a<b)
-  return(a);
- else
-  return(b);
-}
-
-var aristasDFS="";
-var aristasBFS;
-var nodosDFS;
-
-function initNodosDFS(){
-  nodosDFS=JSON.parse(JSON.stringify(nodos));
-}
-
-function DFS (idnodoRaiz,nodofinal) {
-  var tempId;
-  var listaAdyacencia=[];
-    if(idnodoRaiz!=null){
-      nodosDFS[idnodoRaiz].visitado=true;
-      listaAdyacencia=JSON.parse(JSON.stringify(nodosDFS[idnodoRaiz].aristas));
-      listaAdyacencia.sort(function(a,b){return b-a});
-
-      while(listaAdyacencia.length>0){
-        tempId=listaAdyacencia.pop();
-        if(nodosDFS[tempId].visitado==false){
-          //agrega los nodos en formato DOT para graficar
-          if(tempId!=nodofinal){
-            aristasDFS=aristasDFS+"->"+tempId;
-            DFS(tempId,nodofinal);
-          }
-        }
-      }   
-
-    }
-}
-
-function generarRecorridosDFS(){
  
+
+}
+
+function initAristasPrioriddad () {
+  colaAristas=new PriorityQueue();
   for (var i = 0; i < matriz.length; i++) {
-    for (var j = 0; j < matriz.length; j++) {
-        initNodosDFS();
-        DFS(i,j);
-        matrizRecorridos[i][j]=aristasDFS;
-        aristasDFS="";
-    }
-  }
-}
-
-
-//-----funciones para dibujar las matrices de floyd y warshall
-
-function dibujarTabla (m) {
-  var html = "<table class='fija' border=1>";
-
-  for (var i = 0; i < nodos.length; i++) {
-    html = html+"<tr>";
-
-    for (var j = 0; j < nodos.length; j++) {
-      html = html+"<td>";        
-      html = html+"<p>"+m[i][j]+"</p>";
-      html = html+"</td>";
-    }
-    html = html+"</tr>";
-  }  
-
-  html = html+"</table>";
-  return html;
-}
-
-function resultadosFloyd(m){
-   var html="";
-
-  for (var i = 0; i < nodos.length; i++) {
-    for (var j = 0; j < nodos.length; j++) {
-      if(i!=j){        
-        html = html+"<p>"+i+"-"+j+"=>"+m[i][j]+"</p>";
+    for (var j = i; j < matriz.length; j++) {
+      if(matriz[i][j]!=0 && matriz[i][j]!=99){
+        colaAristas.push({src:i,dest:j},matriz[i][j]);
       }
     }
   }
+}
 
-  return html; 
+
+
+//-----funciones para dibujar los grafos de kruskal
+function drawQueue() {
+  
+  container = document.getElementById("mynetworkQueue");
+  
+  options = {
+    width: '400px',
+    height: '400px',
+    hierarchicalLayout: {
+      layout: 'direction'
+    }
+  };
+
+
+  data.dot="dinetwork {"
+  
+
+  var padre=1;
+  var c=1;
+  var j=1;
+  var cambio=false;
+
+  var nc=colaAristas.heap.length
+  for (var i = 1; i < nc; i++) {
+    if(c==2){
+      j++;
+      c=0;
+    }
+    if(i>1){
+      padre=i-j;
+      c++;
+    }
+    /*
+    if(padre!=i){
+      console.log("p:"+padre+" h:"+i);
+      arista=colaAristas.heap[i];
+      temp=padre+" -> "+i+"[label="+arista.priority+"_"+arista.data.src+"_"+arista.data.dest+"];";
+      data.dot=data.dot+temp;
+    }
+    */
+
+      arista=colaAristas.heap[i];
+      temp=padre+" -> "+i+"[label="+arista.priority+"_"+arista.data.src+"_"+arista.data.dest+"];";
+      console.log(arista);
+      data.dot=data.dot+temp;
+
+    data.dot=data.dot+i+";";
+  }
+
+
+  data.dot=data.dot+"}";
+    
+  networkQueue = new vis.Network(container, data, options);
+}
+
+function drawArbol() {
+  
+  container = document.getElementById("mynetworkArbol");
+
+  options = {
+    width: '400px',
+    height: '400px',
+    edges:{
+      arrowScaleFactor : '0.0'  
+    }
+  };
+
+
+  data.dot="dinetwork {"
+  
+  for (var i = 0; i < nodos.length; i++) {
+      data.dot=data.dot+nodos[i].id+";";
+  }
+
+  for (var i = 0; i < nodos.length; i++) { 
+    for (var j = 0; j < nodos.length; j++) {
+      if(matrizResultado[i][j]!=0 && matrizResultado[i][j]!=99){
+          
+        temp=i+" -> "+j+"[label="+matrizResultado[i][j]+"];";
+        console.log(temp);
+        data.dot=data.dot+temp;
+      }
+    } 
+  }
+  
+  data.dot=data.dot+"}";
+  networkArbol = new vis.Network(container, data, options);
 }
 
 //------------------grafo por defecto

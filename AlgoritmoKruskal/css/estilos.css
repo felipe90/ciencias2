@@ -1,0 +1,79 @@
+
+
+
+#mynetwork{
+  display: inline-block;
+  border: 1px solid black;
+  width: 400px;
+  height: 400px;
+  overflow: hidden;
+  margin: 1em;  
+  text-align: center;
+}
+
+#mynetworkQueue,
+#mynetworkArbol{
+  
+  display: inline-block;
+  border: 1px solid black;
+  width: 40%;
+  height: 40%;
+  overflow: hidden;
+  margin: 1em;  
+  text-align: center;
+  
+}
+
+#mynetwork:hover {
+  cursor: pointer;
+}
+
+#matrizInc{
+  text-align: center;
+  display: inline-block;
+  border: 1px solid black;
+  width: 100%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  overflow: hidden;
+}
+
+#listaInc{
+  display: inline-block;
+  border: 1px solid black;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  overflow: hidden;
+}
+
+#adyacenciabtn{
+  display: inline;
+}
+
+#results,
+#matriz{
+  margin: 1em;
+}
+
+body{
+  background: #DDD;
+  margin: 1rem;
+  text-align: center;
+}
+
+table.fija{
+  table-layout: fixed;
+}
+
+table.fija td {
+  width: 10%;
+  height: 10%;
+}
+
+input{
+  width: 10%;
+  text-align: center;
+}
+
+
+

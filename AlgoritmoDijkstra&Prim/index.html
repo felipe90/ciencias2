@@ -1,0 +1,453 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Grafos - Algoritmo de Dijkstra/Prim-</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+  <link href="css/normalize.css" rel="stylesheet" type="text/css" />
+  <link href="dist/vis.css" rel="stylesheet" type="text/css" />
+  <link href="css/estilos.css" rel="stylesheet" type="text/css" />
+  <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+
+  <script type="text/javascript" src="dist/vis.js"></script>
+  <script type="text/javascript" src="dist/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="js/functions.js"></script>
+  <script type="text/javascript" src="js/materialize.min.js"></script>
+  <script type="text/javascript" src="js/p_queue.js"></script>
+</head>
+<body>
+    <div class="card-panel blue darken-4">
+      <h1 class="white-text accent-4">Grafos - Algoritmo de Dijkstra/Prim</h1>
+    </div>
+      <div>
+        <p>"Hacer <strong>click</strong> dentro del canvas para agregar un nodo"</p> 
+        <button class="waves-effect waves-light btn blue darken-2" id="matrizbtn">Generar Matriz de Adyacencia</button>
+      </div>
+      <div id="mynetwork"></div>
+      <div id="matriz">
+        <div class="card-panel blue darken-4">
+          <h2 class="white-text accent-4">- Matriz de Adyacencia -</h2>
+        </div>
+        <div id="matrizInc"></div>
+        <button class="waves-effect waves-light btn blue darken-2" id="adyacenciabtn" >Asignar Adyacencia</button>
+      </div>
+      <button class="waves-effect waves-light btn blue darken-2" id="djbtn">Ejecutar algoritmo de Dijkstra</button>
+      <button class="waves-effect waves-light btn blue darken-2" id="primbtn">Ejecutar algoritmo de Prim</button>
+      <div id="results">
+        <div id="mynetworkDj">
+          <p>Arbol de expansión Dijkstra</p>
+        </div>
+        <div id="mynetworkPrim">
+          <p>Arbol de expasión Prim</p>
+        </div>        
+      </div>
+</body>
+<footer class="page-footer blue darken-1">
+  <p>La matriz de adyacencia, acepta el costo de cada aristapara vertices adjuntos y 99 para vertices no adjuntos.No puede existir un arco que parta de un vertice e incida en el</p>
+  <p>99 = Costo de una arista para vertices no adjuntos.</p>
+  <p>X indica que la matriz es simétrica.</p>
+</footer>
+</html>
+ <script type="text/javascript" src="functions.js"></script>
+
+<script type="text/javascript">
+
+//clase nodos
+node=function(){
+  var id;
+  var aristas;
+  var visitado;
+}
+
+//variables de entorno 
+var nodos=[];
+var matriz=[];
+
+var grafoCompleto=false;
+
+//variables para usar la libreria vis.js
+
+var network;
+var networkDijkstra;
+var networkPrim;
+
+//inicializa el arreglo de nodos con el nodo '0' por defecto
+function initNodos() {
+    nodos[0]=new node();
+    nodos[0].id=0;
+    nodos[0].aristas=[];
+    nodos[0].visitado=false;
+}
+
+//agrega un nodo al arrglo de nodos
+function agregarNodo () {
+  var tempNodo= new node();
+  tempNodo.id=nodos[nodos.length-1].id;
+  tempNodo.aristas=[];
+  tempNodo.visitado=false;
+  tempNodo.id++;
+  nodos.push(tempNodo);
+}
+
+//crea el arreglo bidimencional para guardar la matriz de adyacencia
+function generarMatriz(){
+  for (var i = 0; i < nodos.length; i++) {
+    matriz[i]=[];
+  }
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j < nodos.length; j++) {
+      matriz[i][j]=0;
+    }
+  }
+
+}
+
+//crear la tabla y los iputs de la matriz de adyacencia
+function dibujarMatriz(){
+  generarMatriz();
+
+  var html = "<table class='fija' border=1>";
+
+  for (var i = 0; i < nodos.length; i++) {
+    html = html+"<tr>";
+
+    for (var j = 0; j < nodos.length; j++) {
+      html = html+"<td>";        
+      html = html+"<input type='text' id='input"+i+"_"+j+"' placeholder=("+i+","+j+") />";
+      html = html+"</td>";
+    }
+    html = html+"</tr>";
+  }  
+
+  html = html+"</table>";
+  
+  $("#matrizInc").html( html );
+
+  //llenar la matrix simetrica con 'X' y -1 donde no halla arista
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j <=i; j++) {
+      if(i==j) {
+        $('#input'+i+'_'+j).val(0);
+      }else{
+        $('#input'+i+'_'+j).val('X');
+      }
+    }
+  }  
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = i+1; j < nodos.length; j++) {
+      $('#input'+i+'_'+j).val(99); 
+    }
+  }
+}
+
+//asigna la matriz de adyacencia
+function asignarAdyacencia() { 
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = i; j < nodos.length; j++) {
+      var temp=$("#input"+i+"_"+j).val();
+      temp=parseInt(temp,10);
+      if(temp==0){
+        matriz[i][j]=99;
+      }else{
+        matriz[i][j]=(temp);
+        matriz[j][i]=(temp);
+      }
+    }
+  }  
+
+}
+
+//asigna a nodos su lista de adyacencia corresponciente
+function asignarListaAdyacencia () {
+    for (var i = 0; i < nodos.length; i++) {
+      for (var j = 0; j < nodos.length; j++) {
+        if(matriz[i][j]!=0 && matriz[i][j]!=99){
+          nodos[i].aristas.push(j);          
+        }
+      }
+    }
+}
+
+
+//-----funciones para el uso de la libreria vis.js
+window.onresize = function () {
+  network.redraw()
+};
+
+function destroy() {
+  if (network !== null) {
+    network.destroy();
+    network = null;
+  }
+}
+
+function draw() {
+  destroy();
+
+  container = document.getElementById('mynetwork');
+  options = {
+    width: '400px',
+    height: '400px',
+    edges:{
+      arrowScaleFactor : '0.0'  
+    }
+  };
+
+
+  data.dot="dinetwork {"
+  
+  for (var i = 0; i < nodos.length; i++) {
+      data.dot=data.dot+nodos[i].id+";";
+  }
+
+  if(grafoCompleto==true){
+   for (var i = 0; i < nodos.length; i++) { 
+      for (var j = i; j < nodos.length; j++) {
+        if(matriz[i][j]!=0 && matriz[i][j]!=99){
+          
+          temp=i+" -> "+j+"[label="+matriz[i][j]+"];";
+          data.dot=data.dot+temp;
+        }
+      }
+    } 
+  }
+
+  data.dot=data.dot+"}";
+  network = new vis.Network(container, data, options);
+}
+
+
+//------funciones algoritmo dijkstra
+
+var matrizDijkstra;
+var costos=[]; //pesos dinamicos visitados D 
+var visitados=[]; // S
+var matrizResultadoDj=[];
+var dist=[];
+var bandera=[];
+var cont;
+
+function initDijkstra() {
+  matrizDijkstra=JSON.parse(JSON.stringify(matriz));
+  
+  for (var i = 0; i < matriz.length; i++) {
+    costos[i]=99;
+    visitados[i]=0;
+    matrizResultadoDj[i]=[];
+    for (var j = 0; j < matriz.length; j++) { 
+      matrizResultadoDj[i][j]=99;
+    }
+  }
+
+  cont=0;
+}
+
+
+function dijkstra (vertice) {
+  var min=0;
+  var count;
+  var u; 
+  var v=vertice; // nodo de inicio de busqueda
+
+  for (var i = 0; i < matriz.length; i++) {
+    bandera[i]=false;
+    if(matrizDijkstra[v][i]==99){
+      dist[i]=99;
+    }else{
+      dist[i]=matrizDijkstra[v][i];
+    }
+  }
+
+  dist[v]=0;
+  bandera[v]=true;
+  count=0;
+
+
+  while(count<matriz.length){
+    min=99;
+
+    for (var i = 0; i < matriz.length; i++) {
+      if(dist[i]<min && !bandera[i]){
+        min=dist[i];
+        u=i;
+      }
+    }
+    
+    matrizResultadoDj[u][cont]=matrizDijkstra[u][cont];
+
+    bandera[u]=true;
+    count++;
+    for (var w = 0; w < matriz.length; w++) {
+      if ( dist[w]>dist[u]+matrizDijkstra[u][w] ) {
+        dist[w]=dist[u]+matrizDijkstra[u][w];
+        matrizResultadoDj[u][w]=matrizDijkstra[u][w];
+      } 
+    }
+  }
+
+  for (var i = 0; i < matriz.length; i++) {
+    if (i!=v) {
+        console.log(v+"->"+i+" cost: "+dist[i]);
+      }
+  }
+}
+
+//------funciones algoritmo prim
+
+var matrizPrim;  
+var visited=[]; 
+var matrizResultadoPrim=[];
+var mincost=0;
+
+function initPrim() {
+  matrizPrim=JSON.parse(JSON.stringify(matriz));
+  
+  for (var i = 0; i < matriz.length; i++) {
+    visited[i]=0;
+    matrizResultadoPrim[i]=[];
+    for (var j = 0; j < matriz.length; j++) { 
+      matrizResultadoPrim[i][j]=99;
+    }
+  }
+
+}
+
+
+function  prim() {
+  var ne=0;
+  var a,u,b,v;
+  visited[1]=1;
+  var min=0;
+  while(ne<matriz.length){
+    min=99;
+    for (var i = 0; i < matriz.length; i++) {
+      for (var j = 0; j < matriz.length; j++) {
+        if(matrizPrim[i][j]<min){
+          if (visited[i]!=0) {
+            min=matrizPrim[i][j];
+            a=u=i;
+            b=v=j;
+          }
+        } 
+      }
+    }
+
+    if(visited[u]==0 || visited[v]==0){
+      
+      matrizResultadoPrim[a][b]=min;
+      mincost+=min;
+      visited[b]=1;
+    }
+    matrizPrim[a][b]=99;
+    matrizPrim[b][a]=99;
+    ne++;
+  }
+
+}
+
+
+//-----funciones para dibujar los grafos de dijkstra y prim
+function drawDijkstra() {
+  
+  container = document.getElementById("mynetworkDj");
+  
+  options = {
+    width: '400px',
+    height: '400px',
+    edges:{
+      arrowScaleFactor : '0.0'  
+    }
+  };
+
+  data.dot="dinetwork {"
+  
+  for (var i = 0; i < nodos.length; i++) {
+      data.dot=data.dot+nodos[i].id+";";
+  }
+
+  for (var i = 0; i < nodos.length; i++) { 
+    for (var j = 0; j < nodos.length; j++) {
+      if(matrizResultadoDj[i][j]!=0 && matrizResultadoDj[i][j]!=99){
+          
+        temp=i+" -> "+j+"[label="+matrizResultadoDj[i][j]+"];";
+        data.dot=data.dot+temp;
+      }
+    } 
+  }
+  
+
+  data.dot=data.dot+"}";
+    
+  networkDijkstra = new vis.Network(container, data, options);
+}
+
+
+function drawPrim() {
+  
+  container = document.getElementById("mynetworkPrim");
+  
+  options = {
+    width: '400px',
+    height: '400px',
+    edges:{
+      arrowScaleFactor : '0.0'  
+    }
+  };
+
+  data.dot="dinetwork {"
+  
+  for (var i = 0; i < nodos.length; i++) {
+      data.dot=data.dot+nodos[i].id+";";
+  }
+
+  for (var i = 0; i < nodos.length; i++) { 
+    for (var j = 0; j < nodos.length; j++) {
+      if(matrizResultadoPrim[i][j]!=0 && matrizResultadoPrim[i][j]!=99){
+          
+        temp=i+" -> "+j+"[label="+matrizResultadoPrim[i][j]+"];";
+        data.dot=data.dot+temp;
+      }
+    } 
+  }
+  
+
+  data.dot=data.dot+"}";
+    
+  networkPrim = new vis.Network(container, data, options);
+}
+
+//------------------grafo por defecto
+$(function () {
+
+    initNodos();
+
+    container = document.getElementById('mynetwork');
+    data = {
+      dot: ''
+    };
+    options = {
+      width: '400px',
+      height: '400px',
+      edges:{
+        arrowScaleFactor : '0.0'  
+      }
+    };
+    data.dot="dinetwork {"
+    
+    for (var i = 0; i < nodos.length; i++) {
+        data.dot=data.dot+nodos[i].id+";";
+    }
+
+    data.dot=data.dot+"}";
+    network = new vis.Network(container, data, options);
+
+});
+
+</script>
+
+

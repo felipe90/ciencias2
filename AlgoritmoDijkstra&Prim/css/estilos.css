@@ -1,7 +1,18 @@
 
-#mynetwork,
-#mynetworkdfs,
-#mynetworkbfs{
+
+
+#mynetwork{
+  display: inline-block;
+  border: 1px solid black;
+  width: 400px;
+  height: 400px;
+  overflow: hidden;
+  margin: 1em;  
+  text-align: center;
+}
+
+#mynetworkDj,
+#mynetworkPrim{
   
   display: inline-block;
   border: 1px solid black;
@@ -10,7 +21,7 @@
   overflow: hidden;
   margin: 1em;  
   text-align: center;
-
+  
 }
 
 #mynetwork:hover {
@@ -61,6 +72,7 @@ table.fija td {
 
 input{
   width: 10%;
+  text-align: center;
 }
 
 
