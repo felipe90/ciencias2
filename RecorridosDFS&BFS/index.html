@@ -57,8 +57,8 @@ var grafoCompleto=false;
 //var data;
 //var options;
 var network;
-var networkdfs;
-var networkbfs;
+var networkdfs=null;
+var networkbfs=null;
 
 //inicializa el arreglo de nodos con el nodo '0' por defecto
 function initNodos() {
@@ -189,9 +189,9 @@ function draw() {
 }
 
 
-function drawResultDFS(idGrafo) {
+function drawResultDFS() {
   
-  container = document.getElementById(idGrafo);
+  container = document.getElementById('mynetworkdfs');
   
   options = {
     width: '400px',
@@ -204,19 +204,19 @@ function drawResultDFS(idGrafo) {
   data.dot="dinetwork {"
   
   for (var i = 0; i < nodos.length; i++) {
-      data.dot=data.dot+nodos[i].id+";";
+      data.dot=data.dot+nodosDFS[i].id+";";
   }
 
   data.dot=data.dot+aristasDFS;
   data.dot=data.dot+"}";
   
-  
+
   networkdfs = new vis.Network(container, data, options);
 }
 
-function drawResultBFS(idGrafo) {
+function drawResultBFS() {
   
-  container = document.getElementById(idGrafo);
+  container = document.getElementById('mynetworkbfs');
   
   options = {
     width: '400px',
@@ -229,12 +229,11 @@ function drawResultBFS(idGrafo) {
   data.dot="dinetwork {"
   
   for (var i = 0; i < nodos.length; i++) {
-      data.dot=data.dot+nodos[i].id+";";
+      data.dot=data.dot+nodosBFS[i].id+";";
   }
 
   data.dot=data.dot+aristasBFS;
   data.dot=data.dot+"}";
-  
   
   networkbfs = new vis.Network(container, data, options);
 }
@@ -244,6 +243,10 @@ function drawResultBFS(idGrafo) {
 var aristasDFS;
 var aristasBFS;
 
+function initNodosRecorrido (argument) {
+  initNodosDFS();
+  initNodosBFS();
+}
 function initNodosDFS(){
   nodosDFS=JSON.parse(JSON.stringify(nodos));
   aristasDFS="";
@@ -269,7 +272,7 @@ function DFS (idnodoRaiz) {
       }
     }
   }
-  console.log("DFS: "+aristasDFS);
+  console.log("DFS: "+aristasDFS) ;
 }
 
 function BFS (idnodoRaiz) {

@@ -13,6 +13,7 @@ $(function () {
     initPrim();
     prim(); //comienza desde 0
     drawPrim();
+    $("#mynetworkPrim").append("<p>Costo Minimo: "+mincost+"</p>");
   });
 
   $("#matrizbtn").on("click",function(){

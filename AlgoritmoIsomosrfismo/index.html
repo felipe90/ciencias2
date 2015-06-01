@@ -1,0 +1,419 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Grafos - Algoritmo para comprobar Isomorfismo de grafos-</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+  <link href="css/normalize.css" rel="stylesheet" type="text/css" />
+  <link href="dist/vis.css" rel="stylesheet" type="text/css" />
+  <link href="css/estilos.css" rel="stylesheet" type="text/css" />
+  <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+
+  <script type="text/javascript" src="dist/vis.js"></script>
+  <script type="text/javascript" src="dist/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="js/functions.js"></script>
+  <script type="text/javascript" src="js/materialize.min.js"></script>
+  <script type="text/javascript" src="js/p_queue.js"></script>
+</head>
+<body>
+    <div class="card-panel lime darken-4">
+      <h1 class="white-text accent-4">Grafos - Algoritmo para comprobar Isomorfismo de grafos</h1>
+    </div>
+      <div>
+        <p>"Hacer <strong>click</strong> dentro del canvas para agregar un nodo"</p> 
+        <button class="waves-effect waves-light btn lime darken-3" id="matrizbtn">Generar Matriz de Adyacencia</button>
+      </div>
+      <div>
+          <div id="mynetwork"></div>
+          <div id="mynetwork2"></div>
+      </div>
+      <div id="matriz">
+        <div class="card-panel lime darken-4">
+          <h2 class="white-text accent-4">- Matriz de Adyacencia -</h2>
+        </div>
+        <div>
+          <p>Grafo A</p>
+          <div id="matrizAdy"></div>
+        </div>
+        <div>
+          <p>Grafo B</p>
+          <div id="matrizAdy2"></div>
+        </div>
+        <button class="waves-effect waves-light btn lime darken-3" id="adyacenciabtn" >Asignar Adyacencia</button>
+      </div>
+      <button class="waves-effect waves-light btn lime darken-3" id="djbtn">Comprobar isomorfismo</button>
+          <p>Resultado de la comprovación</p>
+      </div>
+</body>
+<footer class="page-footer blue lime darken-4">
+  <p>La matriz de adyacencia, acepta el costo de cada aristapara vertices adjuntos y 99 para vertices no adjuntos.No puede existir un arco que parta de un vertice e incida en el</p>
+  <p>99 = Costo de una arista para vertices no adjuntos.</p>
+  <p>X indica que la matriz es simétrica.</p>
+</footer>
+</html>
+ <script type="text/javascript" src="functions.js"></script>
+
+<script type="text/javascript">
+
+//clase nodos
+node=function(){
+  var id;
+  var aristas;
+  var visitado;
+}
+
+//variables de entorno 
+var nodos=[];
+var nodos2=[];
+
+var matriz=[];
+var matriz2=[];
+
+var grafoCompleto=false;
+var grafoCompleto2=false;
+
+//variables para usar la libreria vis.js
+
+var network;
+var network2;
+
+//inicializa el arreglo de nodos con el nodo '0' por defecto
+function initNodos() {
+    nodos[0]=new node();
+    nodos[0].id=0;
+    nodos[0].aristas=[];
+    nodos[0].visitado=false;
+    
+    //grafo 2 
+    nodos2[0]=new node();
+    nodos2[0].id=0;
+    nodos2[0].aristas=[];
+    nodos2[0].visitado=false;
+}
+
+
+//agrega un nodo al arrglo de nodos
+function agregarNodo() {
+  var tempNodo= new node();
+  tempNodo.id=nodos[nodos.length-1].id;
+  tempNodo.aristas=[];
+  tempNodo.visitado=false;
+  tempNodo.id++;
+  nodos.push(tempNodo);
+}
+
+function agregarNodo2() {
+  var tempNodo= new node();
+  tempNodo.id=nodos2[nodos2.length-1].id;
+  tempNodo.aristas=[];
+  tempNodo.visitado=false;
+  tempNodo.id++;
+  nodos2.push(tempNodo);
+}
+
+
+//crea el arreglo bidimencional para guardar la matriz de adyacencia
+function generarMatriz(){
+  for (var i = 0; i < nodos.length; i++) {
+    matriz[i]=[];
+  }
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j < nodos.length; j++) {
+      matriz[i][j]=0;
+    }
+  }
+
+  //grafo 2
+  for (var i = 0; i < nodos2.length; i++) {
+    matriz2[i]=[];
+  }
+
+  for (var i = 0; i < nodos2.length; i++) {
+    for (var j = 0; j < nodos2.length; j++) {
+      matriz2[i][j]=0;
+    }
+  }
+
+}
+//crear la tabla y los iputs de la matriz de adyacencia
+function dibujarMatriz(){
+  generarMatriz();
+
+  var html = "<table class='fija' border=1>";
+
+  for (var i = 0; i < nodos.length; i++) {
+    html = html+"<tr>";
+
+    for (var j = 0; j < nodos.length; j++) {
+      html = html+"<td>";        
+      html = html+"<input type='text' id='input"+i+"_"+j+"' placeholder=("+i+","+j+") />";
+      html = html+"</td>";
+    }
+    html = html+"</tr>";
+  }  
+
+  html = html+"</table>";
+  
+  $("#matrizAdy").html( html );
+
+  //llenar la matrix simetrica con 'X' y -1 donde no halla arista
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = 0; j <=i; j++) {
+      if(i==j) {
+        $('#input'+i+'_'+j).val(0);
+      }else{
+        $('#input'+i+'_'+j).val('X');
+      }
+    }
+  }  
+
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = i+1; j < nodos.length; j++) {
+      $('#input'+i+'_'+j).val(99); 
+    }
+  }
+
+  //grafo 2
+  html = "<table class='fija' border=1>";
+
+  for (var i = 0; i < nodos2.length; i++) {
+    html = html+"<tr>";
+
+    for (var j = 0; j < nodos2.length; j++) {
+      html = html+"<td>";        
+      html = html+"<input type='text' id='dinput"+i+"_"+j+"' placeholder=("+i+","+j+") />";
+      html = html+"</td>";
+    }
+    html = html+"</tr>";
+  }  
+
+  html = html+"</table>";
+  
+  $("#matrizAdy2").html( html );
+
+  //llenar la matrix simetrica con 'X' y -1 donde no halla arista
+
+  for (var i = 0; i < nodos2.length; i++) {
+    for (var j = 0; j <=i; j++) {
+      if(i==j) {
+        $('#dinput'+i+'_'+j).val(0);
+      }else{
+        $('#dinput'+i+'_'+j).val('X');
+      }
+    }
+  }  
+
+  for (var i = 0; i < nodos2.length; i++) {
+    for (var j = i+1; j < nodos2.length; j++) {
+      $('#dinput'+i+'_'+j).val(99); 
+    }
+  }
+
+}
+
+
+//asigna la matriz de adyacencia
+function asignarAdyacencia() { 
+  for (var i = 0; i < nodos.length; i++) {
+    for (var j = i; j < nodos.length; j++) {
+      var temp=$("#input"+i+"_"+j).val();
+      temp=parseInt(temp,10);
+      if(temp==0){
+        matriz[i][j]=99;
+      }else{
+        matriz[i][j]=(temp);
+        matriz[j][i]=(temp);
+      }
+    }
+  }  
+
+ //grafo 2
+  for (var i = 0; i < nodos2.length; i++) {
+    for (var j = i; j < nodos2.length; j++) {
+      var temp=$("#dinput"+i+"_"+j).val();
+      temp=parseInt(temp,10);
+      if(temp==0){
+        matriz2[i][j]=99;
+      }else{
+        matriz2[i][j]=(temp);
+        matriz2[j][i]=(temp);
+      }
+    }
+  }
+
+}
+
+//asigna a nodos su lista de adyacencia corresponciente
+function asignarListaAdyacencia () {
+    for (var i = 0; i < nodos.length; i++) {
+      for (var j = 0; j < nodos.length; j++) {
+        if(matriz[i][j]!=0 && matriz[i][j]!=99){
+          nodos[i].aristas.push(j);          
+        }
+      }
+    }
+
+    //grafo2
+    for (var i = 0; i < nodos2.length; i++) {
+      for (var j = 0; j < nodos2.length; j++) {
+        if(matriz2[i][j]!=0 && matriz2[i][j]!=99){
+          nodos2[i].aristas.push(j);          
+        }
+      }
+    }
+
+}
+
+
+//-----funciones para el uso de la libreria vis.js
+window.onresize = function () {
+  network.redraw();
+  network2.redraw();
+};
+
+function destroy() {
+  if (network !== null) {
+    network.destroy();
+    network = null;
+  }
+  if (network2 !== null) {
+    network2.destroy();
+    network2 = null;
+  }
+}
+
+function destroy2 () {
+  if (network2 !== null) {
+    network2.destroy();
+    network2 = null;
+  }
+}
+
+function draw() {
+  destroy();
+
+  container = document.getElementById('mynetwork');
+  options = {
+    width: '400px',
+    height: '400px',
+    edges:{
+      arrowScaleFactor : '0.0'  
+    }
+  };
+
+
+  data.dot="dinetwork {"
+  
+  for (var i = 0; i < nodos.length; i++) {
+      data.dot=data.dot+nodos[i].id+";";
+  }
+
+  if(grafoCompleto==true){
+   for (var i = 0; i < nodos.length; i++) { 
+      for (var j = i; j < nodos.length; j++) {
+        if(matriz[i][j]!=0 && matriz[i][j]!=99){
+          
+          temp=i+" -> "+j+"[label="+matriz[i][j]+"];";
+          data.dot=data.dot+temp;
+        }
+      }
+    } 
+  }
+
+  data.dot=data.dot+"}";
+  network = new vis.Network(container, data, options);
+
+}
+
+function draw2() {
+  destroy2();
+
+  container = document.getElementById('mynetwork2');
+  options = {
+    width: '400px',
+    height: '400px',
+    edges:{
+      arrowScaleFactor : '0.0'  
+    }
+  };
+
+
+  data.dot="dinetwork {"
+  
+  for (var i = 0; i < nodos2.length; i++) {
+      data.dot=data.dot+nodos2[i].id+";";
+  }
+
+  if(grafoCompleto==true){
+   for (var i = 0; i < nodos2.length; i++) { 
+      for (var j = i; j < nodos2.length; j++) {
+        if(matriz2[i][j]!=0 && matriz2[i][j]!=99){
+          
+          temp=i+" -> "+j+"[label="+matriz2[i][j]+"];";
+          data.dot=data.dot+temp;
+        }
+      }
+    } 
+  }
+
+  data.dot=data.dot+"}";
+  network2 = new vis.Network(container, data, options);
+
+}
+
+
+//------------------grafo por defecto
+$(function () {
+
+    initNodos();
+
+    container = document.getElementById('mynetwork');
+    data = {
+      dot: ''
+    };
+    options = {
+      width: '400px',
+      height: '400px',
+      edges:{
+        arrowScaleFactor : '0.0'  
+      }
+    };
+    data.dot="dinetwork {"
+    
+    for (var i = 0; i < nodos.length; i++) {
+        data.dot=data.dot+nodos[i].id+";";
+    }
+
+    data.dot=data.dot+"}";
+    network = new vis.Network(container, data, options);
+});
+
+
+$(function () {
+    container = document.getElementById('mynetwork2');
+    data = {
+      dot: ''
+    };
+    options = {
+      width: '400px',
+      height: '400px',
+      edges:{
+        arrowScaleFactor : '0.0'  
+      }
+    };
+    data.dot="dinetwork {"
+    
+    for (var i = 0; i < nodos2.length; i++) {
+        data.dot=data.dot+nodos2[i].id+";";
+    }
+
+    data.dot=data.dot+"}";
+    network2 = new vis.Network(container, data, options);
+});
+</script>
+
+

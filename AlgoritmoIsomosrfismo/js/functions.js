@@ -2,17 +2,6 @@
 //------------------listeners
 $(function () {
 
-  $("#recorridosbtn").on("click",function(){
-    var nodotxt=$("#inputrecorrido").val();
-    temp=parseInt(nodotxt);
-
-
-    DFS(temp);
-    BFS(temp);
-
-    drawResultDFS();
-    drawResultBFS();
-  });
 
 
   $("#matrizbtn").on("click",function(){
@@ -25,13 +14,20 @@ $(function () {
     grafoCompleto=false;
   });
 
+  $("#mynetwork2").on("click",function(){
+    agregarNodo2();
+    draw2();
+    grafoCompleto2=false;
+  });
+
   $("#adyacenciabtn").on("click",function(){
     asignarAdyacencia();
     asignarListaAdyacencia();
-    grafoCompleto=true;
-    initNodosDFS();
-    initNodosBFS();
+    grafoCompleto=true;   
+    grafoCompleto2=true;
+
     draw();
+    draw2();
   });
  
 });
