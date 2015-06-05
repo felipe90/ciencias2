@@ -43,8 +43,8 @@
         </div>
         <button class="waves-effect waves-light btn lime darken-3" id="adyacenciabtn" >Asignar Adyacencia</button>
       </div>
-      <button class="waves-effect waves-light btn lime darken-3" id="djbtn">Comprobar isomorfismo</button>
-          <p>Resultado de la comprovación</p>
+      <button class="waves-effect waves-light btn lime darken-3" id="isobtn">Comprobar isomorfismo</button>
+          <div id="resultado">Resultado de la comprovación</div>
       </div>
 </body>
 <footer class="page-footer blue lime darken-4">
@@ -267,6 +267,161 @@ function asignarListaAdyacencia () {
     }
 
 }
+
+//-----isomorfismos 2
+
+function factorial (n) {
+  var i=0;
+  var fact=1;
+
+  if(n<=1) { 
+    return(1); 
+  } 
+
+  else { 
+    for(i=1;i<=n;i++) { 
+      fact=fact*i; 
+    } 
+    return fact; 
+  } 
+}
+
+var matrizPermutaciones=[];
+var numperm=0;
+
+function permutar (vector,m,n){
+  if (m > 0){
+    for (var i = 1; i <= m; i++) {
+      //intercambiar (&vector[i], &vector[m]);
+      var aux=vector[i];
+      vector[i]=vector[m];
+      vector[m]=aux;
+      permutar (vector, m-1, n);
+      //intercambiar (&vector[i], &vector[m]);
+      aux=vector[i];
+      vector[i]=vector[m];
+      vector[m]=aux;
+      //--se guardan las permutaciones
+    }
+      
+  }
+  else {
+    for (var k=1; k<n; k++){
+      if(k==(n-1)){ 
+        numperm++;
+        var temp=JSON.parse(JSON.stringify(vector));
+        console.log("PERMUTACION "+numperm+" :  "+ temp);
+        matrizPermutaciones.push(temp);
+      }     
+    }
+  }
+}
+
+var permutacion;
+var grafointercambiofilas=[];
+var grafointercambiocolumnas=[];
+
+function isomorfismo(){
+  var tamanioarreglo = matriz.length+1;
+  
+  var arreglo=[];
+
+  // Crea el arreglo  
+  for(i=0;i<=matriz.length; i++){
+    arreglo[i] = i;
+  }
+
+  numpermutaciones = factorial(matriz.length);
+  console.log( "SE ESPERAN "+numpermutaciones+" PERMUTACIONES");
+
+  permutar(arreglo,matriz.length,tamanioarreglo);
+  
+  // Selecciona una permutacion y aplica el algoritmo---------------
+
+
+  var esIso=false;
+  var html="";
+  for (var k = 0; k < numpermutaciones; k++) {
+
+    permutacion=JSON.parse(JSON.stringify(matrizPermutaciones[k]));
+    permutacion.shift();
+    grafointercambiofilas=[];
+    grafointercambiocolumnas=[];
+
+    for (var i = 0; i < matriz.length; i++) {
+        grafointercambiofilas[i]=[];
+      for (var j = 0; j < matriz.length; j++) {
+        grafointercambiofilas[i][j]=99;
+      }
+    }  
+
+    
+    for (var i = 0; i < matriz.length; i++) {
+      grafointercambiocolumnas[i]=[];
+      for (var j = 0; j < matriz.length; j++) {
+        grafointercambiocolumnas[i][j]=99;
+      }
+    }
+      
+
+    for (var i=0; i<matriz.length; i++){
+      for(var j=0; j<matriz.length; j++){
+        grafointercambiofilas [permutacion[i]-1][j] = matriz[i][j];
+      }
+    }
+
+    for (var i=0; i<matriz.length; i++){
+      for(var j=0; j<matriz.length; j++){
+       grafointercambiocolumnas [i][permutacion[j]-1] = grafointercambiofilas[i][j];
+      }
+    } 
+
+    var comprobacion=true;
+    for (var i=0; i<matriz.length; i++){
+      for(var j=0;j<matriz.length; j++){
+        if(grafointercambiocolumnas[i][j]!=matriz2[i][j]){ comprobacion=false;
+        }
+      }
+    }
+
+    if(comprobacion==true){
+      html+="<p>Se aplica la permutación: "+permutacion+"</p>";
+      html+="<p>Grafo Filas Intercambiadas: </p>";
+
+      for (i=0; i<matriz.length; i++){
+          html+="<p>";
+          for (j=0; j<matriz.length; j++){
+            html+=grafointercambiofilas[i][j]+" ";      
+          }
+        html+="</p>";
+      }
+
+      html+="<p>Grafo Filas Intercambiadas: </p>";
+
+      for (i=0; i<matriz.length; i++){
+        html+="<p>";
+        for (j=0; j<matriz.length; j++){
+          html+=grafointercambiocolumnas[i][j]+" ";      
+        }
+        html+="</p>";
+      }
+
+      html+="<p>Existe un isomorfismo para la permutación: "+permutacion+"</p>";  
+      esIso=true;
+    }
+
+  }
+
+  if(esIso){
+    html+="<p><strong>Es ISOMORFO</strong></p>";
+  }else{
+    html+="<p><strong>No es ISOMORFO</strong></p>";
+  }
+
+  $("#resultado").html(html);
+
+}
+
 
 
 //-----funciones para el uso de la libreria vis.js

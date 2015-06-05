@@ -3,6 +3,9 @@
 $(function () {
 
 
+  $("#isobtn").on("click",function(){
+    isomorfismo();
+  });
 
   $("#matrizbtn").on("click",function(){
     dibujarMatriz();
